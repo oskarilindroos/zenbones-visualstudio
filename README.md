@@ -131,11 +131,12 @@ python3 tools/generate.py
    git tag v1.0.0 && git push origin v1.0.0
    ```
 
-CI builds and tests the tag, creates a GitHub release with the `.vsix`, and
-publishes it to the Marketplace with `marketplace/publishManifest.json` (the
-listing page is `marketplace/overview.md`). Publishing runs in the
-`marketplace` environment, which holds the `VS_MARKETPLACE_TOKEN` secret: an
-Azure DevOps personal access token with the **Marketplace (Manage)** scope.
+3. CI builds and tests the tag and creates a GitHub release with the `.vsix`.
+4. Upload that `.vsix` at
+   [marketplace.visualstudio.com/manage](https://marketplace.visualstudio.com/manage/publishers/OskariLindroos):
+   **New extension → Visual Studio** the first time, **⋯ → Update** after
+   that. The listing text is `marketplace/overview.md`; paste it into the
+   Overview field, and pick the **Theme** category.
 
 ## Limitations
 

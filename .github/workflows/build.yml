@@ -37,14 +37,12 @@ jobs:
           path: src/ZenbonesTheme/bin/Release/ZenbonesTheme.vsix
           if-no-files-found: error
 
-  # Pushing a v* tag publishes that build to GitHub Releases and the
-  # Visual Studio Marketplace. The token lives in the "marketplace"
-  # environment, which can require approval before this job runs.
+  # Pushing a v* tag attaches that build to a GitHub release, which is then
+  # uploaded to the Visual Studio Marketplace by hand.
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: vsix
     runs-on: windows-latest
-    environment: marketplace
     permissions:
       contents: write
     steps:
@@ -65,17 +63,3 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release create $env:GITHUB_REF_NAME ZenbonesTheme.vsix --title $env:GITHUB_REF_NAME --generate-notes
-      - name: Publish to the Visual Studio Marketplace
-        shell: pwsh
-        env:
-          VS_MARKETPLACE_TOKEN: ${{ secrets.VS_MARKETPLACE_TOKEN }}
-        run: |
-          # VsixPublisher ships in the same VSSDK build tools package the project builds with.
-          $package = "$env:RUNNER_TEMP\vssdk"
-          Invoke-WebRequest https://www.nuget.org/api/v2/package/Microsoft.VSSDK.BuildTools/17.14.2120 -OutFile "$package.zip"
-          Expand-Archive "$package.zip" $package
-          & "$package\tools\vssdk\bin\VsixPublisher.exe" publish `
-            -payload ZenbonesTheme.vsix `
-            -publishManifest marketplace/publishManifest.json `
-            -personalAccessToken $env:VS_MARKETPLACE_TOKEN
-          if ($LASTEXITCODE -ne 0) { throw "VsixPublisher failed with exit code $LASTEXITCODE" }
