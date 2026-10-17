@@ -8,6 +8,10 @@ All credit for the color design goes to the original project; this repo only
 ports the themes to Visual Studio. This is an unofficial port, not affiliated with the
 zenbones project.
 
+![Zenbones Dark in Visual Studio](marketplace/images/zenbones-dark.png)
+
+![Zenbones Light in Visual Studio](marketplace/images/zenbones-light.png)
+
 This port was built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
 
 ## Install

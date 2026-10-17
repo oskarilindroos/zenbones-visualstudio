@@ -5,6 +5,10 @@ contrast-based color themes, for Visual Studio 2022 and 2026. Zenbones relies
 on contrast and font style rather than lots of hues, so code stays calm and
 readable.
 
+![Zenbones Dark](images/zenbones-dark.png)
+
+![Zenbones Light](images/zenbones-light.png)
+
 All 19 variants are generated from the zenbones Neovim colorschemes, so the
 colors match the originals exactly.
 
