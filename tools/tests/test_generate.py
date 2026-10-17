@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import generate  # noqa: E402
-from zbvs import pkgdef  # noqa: E402
+from zbvs import fontstyles, pkgdef  # noqa: E402
 from zbvs.colors import compound, contrast  # noqa: E402
 from zbvs.theme import derive_roles  # noqa: E402
 from zbvs.vimcolors import load_variants  # noqa: E402
@@ -79,6 +79,25 @@ class Generated(unittest.TestCase):
             r = derive_roles(v)
             self.assertGreaterEqual(contrast(r.fg, r.bg), 4.5, v.id)
             self.assertGreaterEqual(contrast(r.comment, r.bg), 2.5, v.id)
+
+    def test_font_styles_follow_zenbones(self):
+        by_id = {v.id: fontstyles.classification_styles(v) for v in self.variants}
+        zenbones = by_id["zenbones_dark"]
+        self.assertEqual(zenbones["comment"], {"italic"})
+        self.assertEqual(zenbones["keyword"], {"bold"})
+        self.assertNotIn("class name", zenbones)  # Type is plain in zenbones
+        # Rosebones doesn't bold its keywords.
+        self.assertNotIn("keyword", by_id["rosebones_dark"])
+        # Names differing only in case must not both appear (VS ignores case).
+        for styles in by_id.values():
+            lowered = [name.lower() for name in styles]
+            self.assertEqual(len(lowered), len(set(lowered)))
+
+    def test_font_style_table_is_keyed_by_unique_backgrounds(self):
+        source = fontstyles.render_csharp(self.variants)
+        keys = re.findall(r"\[(0x[0-9A-F]{6})\] = new", source)
+        self.assertEqual(len(keys), 19)
+        self.assertEqual(len(set(keys)), 19)
 
     def test_selection_is_compensated_for_vs_opacity(self):
         # VS paints "Selected Text" at 40% opacity; the stored color must

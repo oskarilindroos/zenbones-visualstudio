@@ -13,7 +13,7 @@ import sys
 import uuid
 from pathlib import Path
 
-from zbvs import pkgdef, vsdirect, vsmap
+from zbvs import fontstyles, pkgdef, vsdirect, vsmap
 from zbvs.theme import derive_roles, token_rules, vscode_colors
 from zbvs.vimcolors import Variant, load_variants
 
@@ -23,6 +23,7 @@ PROJECT = ROOT / "src" / "ZenbonesTheme"
 THEMES = PROJECT / "Themes"
 MANIFEST = PROJECT / "source.extension.vsixmanifest"
 CSPROJ = PROJECT / "ZenbonesTheme.csproj"
+FONT_STYLES = PROJECT / "FontStyles.g.cs"
 
 # Theme GUIDs must never change once published, or users lose their selection.
 NAMESPACE = uuid.UUID("8b3c5d0e-2f4a-4e6b-9c1d-7a5e3f2b1c09")
@@ -107,6 +108,8 @@ def main() -> int:
     ids = [v.id for v in variants]
     outputs[MANIFEST] = replace_block(MANIFEST.read_text(encoding="utf-8"), render_assets(ids))
     outputs[CSPROJ] = replace_block(CSPROJ.read_text(encoding="utf-8"), render_content(ids))
+
+    outputs[FONT_STYLES] = fontstyles.render_csharp(variants)
 
     # The VSIX packager can't rename linked files, so keep a copy beside the project.
     outputs[PROJECT / "LICENSE.txt"] = _read(ROOT / "LICENSE")

@@ -25,6 +25,19 @@ All 19 variants are included and appear under
 | Vimbones | Light |
 | Nordbones, Duckbones, Zenburned, Kanagawabones | Dark |
 
+## Bold and italics
+
+Zenbones conveys a lot through font style: italic comments, strings and
+constants, bold keywords. Visual Studio themes can only carry colors, so the
+extension includes a small editor component that adds the styles at runtime,
+using the same per-variant styles as the Neovim originals. It only does this
+while a zenbones theme is active (detected from the editor background), and
+removes them again when you switch to another theme.
+
+Turn italics or bold off under **Tools → Options → Zenbones → General**.
+Italics look best with a font that has a real italic, such as Cascadia Code or
+Consolas.
+
 ## How it works
 
 The themes are generated, not hand-written. `tools/generate.py` reads the
@@ -43,6 +56,8 @@ per theme into `src/ZenbonesTheme/Themes/`:
    Visual Studio 2026 reads before falling back to the legacy ones.
 5. **`pkgdef.py`** compiles everything to the binary format VS loads; it's a
    port of the VSIX color compiler, so no Windows tooling is needed.
+6. **`fontstyles.py`** writes `FontStyles.g.cs`, the per-variant bold/italic
+   table used by the C# editor component (`FontStyleListener.cs`).
 
 The generator is plain Python 3.10+ with no dependencies and runs anywhere.
 Only packaging the `.vsix` needs Windows.
@@ -75,10 +90,6 @@ python3 tools/generate.py
 
 - So far only tested on Visual Studio 2022. The Visual Studio 2026 (Fluent)
   tokens follow Microsoft's migration guide but haven't been checked in 2026 yet.
-- **No bold or italics.** Zenbones conveys a lot through font style (bold
-  keywords, italic comments and constants), but Visual Studio themes can only
-  set colors. You can still enable bold per item in
-  Tools → Options → Environment → Fonts and Colors.
 - Visual Studio applies its own opacity to some editor highlights (selection,
   current line). The generator compensates so the color you see on screen
   matches zenbones.
