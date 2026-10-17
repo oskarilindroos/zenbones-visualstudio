@@ -34,9 +34,12 @@ namespace ZenbonesTheme
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistry { get; set; }
 
+        // Replaced in tests, which don't have a VS shell.
+        internal Func<Style> EnabledStyles { get; set; } = Options.EnabledStylesOnUIThread;
+        internal Action<Action> Schedule { get; set; } = FontStyler.ScheduleOnUIThread;
+
         public void TextViewCreated(IWpfTextView textView)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
             var formatMap = ClassificationFormatMapService.GetClassificationFormatMap(textView);
             if (_stylers.ContainsKey(formatMap))
             {
@@ -45,7 +48,9 @@ namespace ZenbonesTheme
             var styler = new FontStyler(
                 formatMap,
                 EditorFormatMapService.GetEditorFormatMap(textView),
-                ClassificationTypeRegistry);
+                ClassificationTypeRegistry,
+                EnabledStyles,
+                Schedule);
             _stylers.Add(formatMap, styler);
             styler.Apply();
         }
@@ -60,6 +65,8 @@ namespace ZenbonesTheme
         private readonly IClassificationFormatMap _formatMap;
         private readonly IEditorFormatMap _editorFormatMap;
         private readonly IClassificationTypeRegistryService _registry;
+        private readonly Func<Style> _enabledStyles;
+        private readonly Action<Action> _schedule;
 
         // Styles this class added (as opposed to ones the user set themselves).
         private readonly Dictionary<IClassificationType, Style> _added =
@@ -71,11 +78,15 @@ namespace ZenbonesTheme
         public FontStyler(
             IClassificationFormatMap formatMap,
             IEditorFormatMap editorFormatMap,
-            IClassificationTypeRegistryService registry)
+            IClassificationTypeRegistryService registry,
+            Func<Style> enabledStyles,
+            Action<Action> schedule)
         {
             _formatMap = formatMap;
             _editorFormatMap = editorFormatMap;
             _registry = registry;
+            _enabledStyles = enabledStyles;
+            _schedule = schedule;
 
             // Theme switches and Fonts and Colors edits rebuild the format map,
             // dropping our styles, so reapply whenever it changes.
@@ -92,19 +103,26 @@ namespace ZenbonesTheme
             }
             // Coalesce bursts of change events (a theme switch raises many).
             _pending = true;
+            _schedule(() =>
+            {
+                _pending = false;
+                Apply();
+            });
+        }
+
+        /// <summary>Runs <paramref name="action"/> on the UI thread once the current work yields.</summary>
+        public static void ScheduleOnUIThread(Action action)
+        {
             ThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(alwaysYield: true);
-                _pending = false;
-                Apply();
+                action();
             }).FileAndForget("zenbones/fontstyles/apply");
         }
 
         public void Apply()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-            var enabled = (Options.Italic ? Style.Italic | Style.NoItalic : Style.None)
-                | (Options.Bold ? Style.Bold | Style.NoBold : Style.None);
+            var enabled = _enabledStyles();
             var wanted = enabled == Style.None ? null : FontStyles.ForBackground(Background());
 
             _applying = true;

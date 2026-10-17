@@ -14,7 +14,7 @@ namespace ZenbonesTheme
     /// </summary>
     internal static class Options
     {
-        private const string Collection = "Zenbones";
+        internal const string Collection = "Zenbones";
 
         private static bool s_loaded;
         private static bool s_italic = true;
@@ -42,17 +42,24 @@ namespace ZenbonesTheme
             }
         }
 
+        /// <summary>The styles <see cref="FontStyler"/> may add or cancel.</summary>
+        public static Style EnabledStylesOnUIThread()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return EnabledStyles(Italic, Bold);
+        }
+
+        internal static Style EnabledStyles(bool italic, bool bold) =>
+            (italic ? Style.Italic | Style.NoItalic : Style.None)
+            | (bold ? Style.Bold | Style.NoBold : Style.None);
+
         public static void Save(bool italic, bool bold)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var store = new ShellSettingsManager(ServiceProvider.GlobalProvider)
-                .GetWritableSettingsStore(SettingsScope.UserSettings);
-            if (!store.CollectionExists(Collection))
-            {
-                store.CreateCollection(Collection);
-            }
-            store.SetBoolean(Collection, nameof(Italic), italic);
-            store.SetBoolean(Collection, nameof(Bold), bold);
+            Write(
+                new ShellSettingsManager(ServiceProvider.GlobalProvider).GetWritableSettingsStore(SettingsScope.UserSettings),
+                italic,
+                bold);
 
             s_italic = italic;
             s_bold = bold;
@@ -68,10 +75,21 @@ namespace ZenbonesTheme
                 return;
             }
             s_loaded = true;
-            var store = new ShellSettingsManager(ServiceProvider.GlobalProvider)
-                .GetReadOnlySettingsStore(SettingsScope.UserSettings);
-            s_italic = store.GetBoolean(Collection, nameof(Italic), true);
-            s_bold = store.GetBoolean(Collection, nameof(Bold), true);
+            (s_italic, s_bold) = Read(
+                new ShellSettingsManager(ServiceProvider.GlobalProvider).GetReadOnlySettingsStore(SettingsScope.UserSettings));
+        }
+
+        internal static (bool Italic, bool Bold) Read(SettingsStore store) =>
+            (store.GetBoolean(Collection, nameof(Italic), true), store.GetBoolean(Collection, nameof(Bold), true));
+
+        internal static void Write(WritableSettingsStore store, bool italic, bool bold)
+        {
+            if (!store.CollectionExists(Collection))
+            {
+                store.CreateCollection(Collection);
+            }
+            store.SetBoolean(Collection, nameof(Italic), italic);
+            store.SetBoolean(Collection, nameof(Bold), bold);
         }
     }
 

@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZenbonesTheme", "src\ZenbonesTheme\ZenbonesTheme.csproj", "{4F2D1B7C-6E3A-4C59-9B8D-0A1E2F3C4D5E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ZenbonesTheme.Tests", "src\ZenbonesTheme.Tests\ZenbonesTheme.Tests.csproj", "{AE8ACEB8-9556-4945-AAEF-A87172A01BA3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,5 +17,9 @@ Global
 		{4F2D1B7C-6E3A-4C59-9B8D-0A1E2F3C4D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4F2D1B7C-6E3A-4C59-9B8D-0A1E2F3C4D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4F2D1B7C-6E3A-4C59-9B8D-0A1E2F3C4D5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE8ACEB8-9556-4945-AAEF-A87172A01BA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE8ACEB8-9556-4945-AAEF-A87172A01BA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE8ACEB8-9556-4945-AAEF-A87172A01BA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE8ACEB8-9556-4945-AAEF-A87172A01BA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

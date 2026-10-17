@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import generate  # noqa: E402
-from zbvs import fontstyles, pkgdef  # noqa: E402
+from zbvs import fontstyles, pkgdef, vsdirect  # noqa: E402
 from zbvs.colors import compound, contrast  # noqa: E402
 from zbvs.theme import derive_roles  # noqa: E402
 from zbvs.vimcolors import load_variants  # noqa: E402
@@ -111,6 +111,33 @@ class Generated(unittest.TestCase):
             drawn = compound(stored, r.bg, vsc_opacity=0.4)
             for a, b in zip(bytes.fromhex(drawn[1:7]), bytes.fromhex(r.selection[1:])):
                 self.assertLessEqual(abs(a - b), 2, v.id)
+
+
+class CSharpProjects(unittest.TestCase):
+    SRC = generate.ROOT / "src"
+
+    def compiled(self, project: Path) -> set[str]:
+        return {
+            Path(m.replace("\\", "/")).name
+            for m in re.findall(r'<Compile Include="([^"]+\.cs)"', project.read_text())
+        }
+
+    def test_projects_list_every_source_file(self):
+        # Both projects list files explicitly (globs fail on some VM shares),
+        # so a new file is easy to forget in one of them.
+        sources = {p.name for p in (self.SRC / "ZenbonesTheme").glob("*.cs")}
+        self.assertEqual(self.compiled(self.SRC / "ZenbonesTheme" / "ZenbonesTheme.csproj"), sources)
+        tests = self.SRC / "ZenbonesTheme.Tests"
+        self.assertEqual(
+            self.compiled(tests / "ZenbonesTheme.Tests.csproj"),
+            sources | {p.name for p in tests.glob("*.cs")},
+        )
+
+    def test_modifier_classification_name_matches_the_themes(self):
+        source = (self.SRC / "ZenbonesTheme" / "ModifierClassifier.cs").read_text()
+        name = re.search(r'public const string Name = "([^"]+)";', source).group(1)
+        self.assertIn(name, vsdirect.SYNTAX)
+        self.assertIn(name, vsdirect.OVERLAYS)
 
 
 if __name__ == "__main__":

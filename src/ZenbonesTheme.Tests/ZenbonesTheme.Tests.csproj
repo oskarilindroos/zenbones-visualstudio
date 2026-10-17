@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <IsPackable>false</IsPackable>
+    <!-- Globs match nothing on some VM shared folders, so files are listed explicitly. -->
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- The extension's sources are compiled in directly rather than through a
+         project reference, which would build and deploy the VSIX. -->
+    <Compile Include="..\ZenbonesTheme\FontStyleListener.cs" Link="Extension\FontStyleListener.cs" />
+    <Compile Include="..\ZenbonesTheme\FontStyles.cs" Link="Extension\FontStyles.cs" />
+    <Compile Include="..\ZenbonesTheme\FontStyles.g.cs" Link="Extension\FontStyles.g.cs" />
+    <Compile Include="..\ZenbonesTheme\ModifierClassifier.cs" Link="Extension\ModifierClassifier.cs" />
+    <Compile Include="..\ZenbonesTheme\Options.cs" Link="Extension\Options.cs" />
+    <Compile Include="..\ZenbonesTheme\ZenbonesPackage.cs" Link="Extension\ZenbonesPackage.cs" />
+    <Compile Include="Fakes.cs" />
+    <Compile Include="FontStylerTests.cs" />
+    <Compile Include="FontStylesTests.cs" />
+    <Compile Include="ModifierTaggerTests.cs" />
+    <Compile Include="OptionsTests.cs" />
+    <Compile Include="RegistrationTests.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="WindowsBase" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="Moq" Version="4.18.4" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" PrivateAssets="all" />
+  </ItemGroup>
+</Project>
