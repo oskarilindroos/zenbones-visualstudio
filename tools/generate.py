@@ -22,6 +22,7 @@ ZENBONES = ROOT / "vendor" / "zenbones.nvim"
 PROJECT = ROOT / "src" / "ZenbonesTheme"
 THEMES = PROJECT / "Themes"
 MANIFEST = PROJECT / "source.extension.vsixmanifest"
+CSPROJ = PROJECT / "ZenbonesTheme.csproj"
 
 # Theme GUIDs must never change once published, or users lose their selection.
 NAMESPACE = uuid.UUID("8b3c5d0e-2f4a-4e6b-9c1d-7a5e3f2b1c09")
@@ -70,6 +71,26 @@ def render_assets(ids: list[str]) -> str:
     return assets + "\n        "
 
 
+def render_content(ids: list[str]) -> str:
+    items = "".join(
+        f'\n    <Content Include="Themes\\{i}.pkgdef">'
+        "\n      <CopyToOutputDirectory>Always</CopyToOutputDirectory>"
+        "\n      <IncludeInVSIX>true</IncludeInVSIX>"
+        "\n    </Content>"
+        for i in ids
+    )
+    return items + "\n    "
+
+
+def replace_block(text: str, body: str) -> str:
+    return re.sub(
+        r"(<!-- themes:start -->).*?(<!-- themes:end -->)",
+        lambda m: m.group(1) + body + m.group(2),
+        text,
+        flags=re.S,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--check", action="store_true", help="verify instead of writing")
@@ -83,13 +104,9 @@ def main() -> int:
         THEMES / f"{v.id}.pkgdef": pkgdef.render(build_theme(v, variants)) for v in variants
     }
 
-    manifest = MANIFEST.read_text(encoding="utf-8")
-    outputs[MANIFEST] = re.sub(
-        r"(<!-- themes:start -->).*?(<!-- themes:end -->)",
-        lambda m: m.group(1) + render_assets([v.id for v in variants]) + m.group(2),
-        manifest,
-        flags=re.S,
-    )
+    ids = [v.id for v in variants]
+    outputs[MANIFEST] = replace_block(MANIFEST.read_text(encoding="utf-8"), render_assets(ids))
+    outputs[CSPROJ] = replace_block(CSPROJ.read_text(encoding="utf-8"), render_content(ids))
 
     # The VSIX packager can't rename linked files, so keep a copy beside the project.
     outputs[PROJECT / "LICENSE.txt"] = _read(ROOT / "LICENSE")
