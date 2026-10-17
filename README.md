@@ -10,6 +10,14 @@ zenbones project.
 
 This port was built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
 
+## Install
+
+Install **Zenbones Themes** from the
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=PUBLISHER_ID.ZenbonesThemes),
+or in Visual Studio under **Extensions → Manage Extensions**. Each
+[GitHub release](https://github.com/oskarilindroos/zenbones-visualstudio/releases)
+also has the `.vsix` attached.
+
 All 19 variants are included and appear under
 **Tools → Options → Environment → General → Color Theme**:
 
@@ -109,6 +117,21 @@ To update zenbones itself:
 git -C vendor/zenbones.nvim pull origin main
 python3 tools/generate.py
 ```
+
+## Releasing
+
+1. Bump `Version` in `src/ZenbonesTheme/source.extension.vsixmanifest` and merge it to `main`.
+2. Tag that commit and push the tag:
+
+   ```sh
+   git tag v1.0.0 && git push origin v1.0.0
+   ```
+
+CI builds and tests the tag, creates a GitHub release with the `.vsix`, and
+publishes it to the Marketplace with `marketplace/publishManifest.json` (the
+listing page is `marketplace/overview.md`). Publishing runs in the
+`marketplace` environment, which holds the `VS_MARKETPLACE_TOKEN` secret: an
+Azure DevOps personal access token with the **Marketplace (Manage)** scope.
 
 ## Limitations
 

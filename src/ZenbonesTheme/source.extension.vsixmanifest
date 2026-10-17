@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
     <Metadata>
-        <Identity Id="ZenbonesTheme.oskarilindroos" Version="0.1.0" Language="en-US" Publisher="Oskari Lindroos" />
+        <Identity Id="ZenbonesTheme.oskarilindroos" Version="1.0.0" Language="en-US" Publisher="Oskari Lindroos" />
         <DisplayName>Zenbones Themes</DisplayName>
         <Description xml:space="preserve">The zenbones collection of contrast-based color themes (zenbones, zenwritten, neobones, rosebones, tokyobones, kanagawabones and more), generated from zenbones.nvim. Light and dark variants for Visual Studio 2022 and 2026.</Description>
         <MoreInfo>https://github.com/oskarilindroos/zenbones-visualstudio</MoreInfo>
         <License>LICENSE.txt</License>
+        <GettingStartedGuide>https://github.com/oskarilindroos/zenbones-visualstudio#readme</GettingStartedGuide>
+        <ReleaseNotes>https://github.com/oskarilindroos/zenbones-visualstudio/releases</ReleaseNotes>
         <Icon>icon.png</Icon>
         <PreviewImage>icon.png</PreviewImage>
-        <Tags>theme, color theme, zenbones, dark, light</Tags>
+        <Tags>theme, color theme, colour scheme, zenbones, dark theme, light theme, low contrast, neovim</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,19.0)">
