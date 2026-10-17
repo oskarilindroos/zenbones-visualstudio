@@ -46,8 +46,7 @@
     <Content Include="Themes\*.pkgdef">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="..\..\LICENSE">
-      <Link>LICENSE.txt</Link>
+    <Content Include="LICENSE.txt">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
     <Content Include="icon.png">

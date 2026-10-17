@@ -91,6 +91,9 @@ def main() -> int:
         flags=re.S,
     )
 
+    # The VSIX packager can't rename linked files, so keep a copy beside the project.
+    outputs[PROJECT / "LICENSE.txt"] = _read(ROOT / "LICENSE")
+
     stale = [p for p, text in outputs.items() if not p.exists() or _read(p) != text]
     extra = [p for p in THEMES.glob("*.pkgdef") if p not in outputs]
     if args.check:
