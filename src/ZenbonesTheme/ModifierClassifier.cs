@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Classification;
+using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Tagging;
 using Microsoft.VisualStudio.Utilities;
 
 namespace ZenbonesTheme
@@ -37,24 +39,34 @@ namespace ZenbonesTheme
         }
     }
 
-    [Export(typeof(IClassifierProvider))]
+    // A view tagger rather than a buffer classifier: Roslyn's classification
+    // taggers are view taggers, so a buffer-level aggregator never sees them.
+    [Export(typeof(IViewTaggerProvider))]
     [ContentType("CSharp")]
-    internal sealed class ModifierClassifierProvider : IClassifierProvider
+    [TagType(typeof(IClassificationTag))]
+    internal sealed class ModifierTaggerProvider : IViewTaggerProvider
     {
         [Import]
-        internal IClassifierAggregatorService ClassifierAggregatorService { get; set; }
+        internal IViewTagAggregatorFactoryService TagAggregatorFactory { get; set; }
 
         [Import]
         internal IClassificationTypeRegistryService ClassificationTypeRegistry { get; set; }
 
-        public IClassifier GetClassifier(ITextBuffer textBuffer) =>
-            textBuffer.Properties.GetOrCreateSingletonProperty(() => new ModifierClassifier(
-                textBuffer,
-                ClassifierAggregatorService,
-                ClassificationTypeRegistry.GetClassificationType(ModifierClassification.Name)));
+        public ITagger<T> CreateTagger<T>(ITextView textView, ITextBuffer buffer) where T : ITag
+        {
+            // Only tag the view's own C# buffer, not buffers projected into it.
+            if (textView.TextBuffer != buffer)
+            {
+                return null;
+            }
+            return textView.Properties.GetOrCreateSingletonProperty(() => new ModifierTagger(
+                textView,
+                TagAggregatorFactory,
+                ClassificationTypeRegistry.GetClassificationType(ModifierClassification.Name))) as ITagger<T>;
+        }
     }
 
-    internal sealed class ModifierClassifier : IClassifier
+    internal sealed class ModifierTagger : ITagger<IClassificationTag>
     {
         private static readonly HashSet<string> s_keywords = new HashSet<string>(StringComparer.Ordinal)
         {
@@ -67,66 +79,74 @@ namespace ZenbonesTheme
             "get", "set", "init", "add", "remove",
         };
 
-        // The aggregator includes this classifier too, so calls back into it
-        // from inside GetClassificationSpans return nothing.
+        // The aggregator includes this tagger too, so calls back into it from
+        // inside GetTags return nothing.
         [ThreadStatic]
-        private static bool t_classifying;
+        private static bool t_tagging;
 
-        private readonly ITextBuffer _buffer;
-        private readonly IClassifierAggregatorService _aggregatorService;
-        private readonly IClassificationType _modifier;
-        private IClassifier _aggregator;
+        private readonly ITextView _view;
+        private readonly IViewTagAggregatorFactoryService _aggregatorFactory;
+        private readonly ClassificationTag _modifier;
+        private ITagAggregator<IClassificationTag> _aggregator;
         private bool _raising;
 
-        public ModifierClassifier(ITextBuffer buffer, IClassifierAggregatorService aggregatorService, IClassificationType modifier)
+        public ModifierTagger(ITextView view, IViewTagAggregatorFactoryService aggregatorFactory, IClassificationType modifier)
         {
-            _buffer = buffer;
-            _aggregatorService = aggregatorService;
-            _modifier = modifier;
+            _view = view;
+            _aggregatorFactory = aggregatorFactory;
+            _modifier = new ClassificationTag(modifier);
+            _view.Closed += OnClosed;
         }
 
-        public event EventHandler<ClassificationChangedEventArgs> ClassificationChanged;
+        public event EventHandler<SnapshotSpanEventArgs> TagsChanged;
 
-        public IList<ClassificationSpan> GetClassificationSpans(SnapshotSpan span)
+        public IEnumerable<ITagSpan<IClassificationTag>> GetTags(NormalizedSnapshotSpanCollection spans)
         {
-            var result = new List<ClassificationSpan>();
-            if (t_classifying)
+            var result = new List<ITagSpan<IClassificationTag>>();
+            if (t_tagging || spans.Count == 0)
             {
                 return result;
             }
 
-            t_classifying = true;
+            var snapshot = spans[0].Snapshot;
+            t_tagging = true;
             try
             {
-                foreach (var classified in Aggregator().GetClassificationSpans(span))
+                foreach (var tagSpan in Aggregator().GetTags(spans))
                 {
-                    if (string.Equals(classified.ClassificationType.Classification, "keyword", StringComparison.OrdinalIgnoreCase)
-                        && s_keywords.Contains(classified.Span.GetText()))
+                    if (!string.Equals(tagSpan.Tag.ClassificationType.Classification, "keyword", StringComparison.OrdinalIgnoreCase))
                     {
-                        result.Add(new ClassificationSpan(classified.Span, _modifier));
+                        continue;
+                    }
+                    foreach (var span in tagSpan.Span.GetSpans(snapshot))
+                    {
+                        if (s_keywords.Contains(span.GetText()))
+                        {
+                            result.Add(new TagSpan<IClassificationTag>(span, _modifier));
+                        }
                     }
                 }
             }
             finally
             {
-                t_classifying = false;
+                t_tagging = false;
             }
             return result;
         }
 
-        private IClassifier Aggregator()
+        private ITagAggregator<IClassificationTag> Aggregator()
         {
             if (_aggregator == null)
             {
-                // Created lazily: creating it in the constructor would recurse
-                // into our own provider before the singleton is stored.
-                _aggregator = _aggregatorService.GetClassifier(_buffer);
-                _aggregator.ClassificationChanged += OnAggregatorChanged;
+                // Created lazily: creating it while our provider is still
+                // constructing this tagger would recurse into the provider.
+                _aggregator = _aggregatorFactory.CreateTagAggregator<IClassificationTag>(_view);
+                _aggregator.TagsChanged += OnAggregatorChanged;
             }
             return _aggregator;
         }
 
-        private void OnAggregatorChanged(object sender, ClassificationChangedEventArgs e)
+        private void OnAggregatorChanged(object sender, TagsChangedEventArgs e)
         {
             // Our own event comes back through the aggregator; don't echo it.
             if (_raising)
@@ -136,11 +156,28 @@ namespace ZenbonesTheme
             _raising = true;
             try
             {
-                ClassificationChanged?.Invoke(this, new ClassificationChangedEventArgs(e.ChangeSpan));
+                var handler = TagsChanged;
+                if (handler != null)
+                {
+                    foreach (var span in e.Span.GetSpans(_view.TextBuffer))
+                    {
+                        handler(this, new SnapshotSpanEventArgs(span));
+                    }
+                }
             }
             finally
             {
                 _raising = false;
+            }
+        }
+
+        private void OnClosed(object sender, EventArgs e)
+        {
+            _view.Closed -= OnClosed;
+            if (_aggregator != null)
+            {
+                _aggregator.TagsChanged -= OnAggregatorChanged;
+                _aggregator.Dispose();
             }
         }
     }
