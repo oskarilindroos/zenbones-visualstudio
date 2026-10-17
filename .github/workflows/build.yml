@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test
+        run: python -m unittest discover -s tools/tests -v
+      - name: Check generated themes are up to date
+        run: python tools/generate.py --check
+
+  vsix:
+    needs: generate
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: microsoft/setup-msbuild@v2
+      - name: Build
+        run: msbuild ZenbonesTheme.sln /restore /p:Configuration=Release /v:minimal
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZenbonesTheme.vsix
+          path: src/ZenbonesTheme/bin/Release/ZenbonesTheme.vsix
+          if-no-files-found: error

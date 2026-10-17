@@ -1,0 +1,3 @@
+[submodule "vendor/zenbones.nvim"]
+	path = vendor/zenbones.nvim
+	url = https://github.com/zenbones-theme/zenbones.nvim.git

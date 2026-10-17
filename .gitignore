@@ -1,0 +1,9 @@
+# Visual Studio / MSBuild
+.vs/
+bin/
+obj/
+*.user
+*.vsix
+
+# Python
+__pycache__/

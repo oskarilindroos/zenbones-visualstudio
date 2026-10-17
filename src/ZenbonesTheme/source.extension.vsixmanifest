@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="ZenbonesTheme.oskarilindroos" Version="0.1.0" Language="en-US" Publisher="Oskari Lindroos" />
+        <DisplayName>Zenbones Themes</DisplayName>
+        <Description xml:space="preserve">The zenbones collection of contrast-based color themes (zenbones, zenwritten, neobones, rosebones, tokyobones, kanagawabones and more), generated from zenbones.nvim. Light and dark variants for Visual Studio 2022 and 2026.</Description>
+        <MoreInfo>https://github.com/oskarilindroos/zenbones-visualstudio</MoreInfo>
+        <License>LICENSE.txt</License>
+        <Icon>icon.png</Icon>
+        <PreviewImage>icon.png</PreviewImage>
+        <Tags>theme, color theme, zenbones, dark, light</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,19.0)">
+            <ProductArchitecture>amd64</ProductArchitecture>
+        </InstallationTarget>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,19.0)">
+            <ProductArchitecture>arm64</ProductArchitecture>
+        </InstallationTarget>
+    </Installation>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[17.0,)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets><!-- themes:start -->
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\zenbones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\zenbones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\neobones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\neobones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\vimbones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\forestbones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\forestbones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\nordbones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\rosebones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\rosebones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\tokyobones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\tokyobones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\seoulbones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\seoulbones_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\duckbones_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\zenburned_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\zenwritten_dark.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\zenwritten_light.pkgdef" />
+        <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="Themes\kanagawabones_dark.pkgdef" />
+        <!-- themes:end -->
+    </Assets>
+</PackageManifest>
