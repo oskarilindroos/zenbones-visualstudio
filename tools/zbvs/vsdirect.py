@@ -100,14 +100,22 @@ SYNTAX = {
     "cppNamespace": "fg",
     "cppLabel": "special",
     # markup
+    # TextMate-colored markup (HTML etc. without the web workload installed)
+    "Markup Node": "keyword",
+    "Markup Attribute": "special",
+    "Markup Attribute Value": "string",
+    # HTML editor (ASP.NET and web development workload)
     "HTML Element Name": "keyword",
-    "HTML Attribute Name": "special",
+    "HTML Attribute": "special",
+    "HTML Server-Side Script": "special",
     "HTML Attribute Value": "string",
     "HTML Tag Delimiter": "delimiter",
     "HTML Operator": "delimiter",
     "HTML Comment": "comment",
     "HTML Entity": "special",
     "CSS Selector": "keyword",
+    "CSS Keyword": "keyword",
+    "CSS String Value": "string",
     "CSS Property Name": "identifier",
     "CSS Property Value": "constant",
     "CSS Comment": "comment",
