@@ -13,7 +13,7 @@ This port was built with [Claude Code](https://claude.com/claude-code), Anthropi
 ## Install
 
 Install **Zenbones Themes** from the
-[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=PUBLISHER_ID.ZenbonesThemes),
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OskariLindroos.ZenbonesThemes),
 or in Visual Studio under **Extensions → Manage Extensions**. Each
 [GitHub release](https://github.com/oskarilindroos/zenbones-visualstudio/releases)
 also has the `.vsix` attached.
