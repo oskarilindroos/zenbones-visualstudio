@@ -77,6 +77,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // zenbones_light
                 [0xF0EDEC] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -143,6 +144,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // neobones_dark
                 [0x0F191F] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -209,6 +211,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // neobones_light
                 [0xE5EDE6] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -275,6 +278,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // vimbones_light
                 [0xF0F0CA] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -337,6 +341,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // forestbones_dark
                 [0x2C343A] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -398,6 +403,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // forestbones_light
                 [0xFAF3E1] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -459,6 +465,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // nordbones_dark
                 [0x2F3541] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -629,6 +636,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // tokyobones_light
                 [0xD6D7DC] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -678,6 +686,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // seoulbones_dark
                 [0x4B4B4B] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -727,6 +736,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // seoulbones_light
                 [0xE2E2E2] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -776,6 +786,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // duckbones_dark
                 [0x0E101A] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -825,6 +836,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // zenburned_dark
                 [0x404040] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -874,6 +886,7 @@ namespace ZenbonesTheme
                     ["XML Keyword"] = Style.Bold,
                     ["XML Name"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // zenwritten_dark
                 [0x191919] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -940,6 +953,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // zenwritten_light
                 [0xEEEEEE] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -1006,6 +1020,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
                 // kanagawabones_dark
                 [0x1F1F28] = new Dictionary<string, Style>(StringComparer.OrdinalIgnoreCase)
@@ -1072,6 +1087,7 @@ namespace ZenbonesTheme
                     ["XML Name"] = Style.Bold,
                     ["XML Processing Instruction"] = Style.Bold,
                     ["XSLT Keyword"] = Style.Bold,
+                    ["Zenbones Modifier Keyword"] = Style.NoBold,
                 },
             };
     }

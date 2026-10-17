@@ -29,11 +29,18 @@ FG = "Foreground"
 BG = "Background"
 
 
+# Classifications drawn on top of another one, which must undo any style the
+# underlying classification has that their own role doesn't.
+OVERLAYS = {"Zenbones Modifier Keyword": "keyword"}
+
 # Classification name -> role, for the Text Editor MEF Items.
 SYNTAX = {
     # language service basics
     "keyword": "keyword",
     "keyword - control": "keyword",
+    # ModifierClassifier.cs: modifiers and declaration keywords, which
+    # zenbones colors as types (@keyword.storage, @type.qualifier).
+    "Zenbones Modifier Keyword": "type",
     "operator": "delimiter",
     "operator - overloaded": "delimiter",
     "punctuation": "delimiter",

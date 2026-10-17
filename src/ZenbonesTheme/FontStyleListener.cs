@@ -103,7 +103,8 @@ namespace ZenbonesTheme
         public void Apply()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            var enabled = (Options.Italic ? Style.Italic : Style.None) | (Options.Bold ? Style.Bold : Style.None);
+            var enabled = (Options.Italic ? Style.Italic | Style.NoItalic : Style.None)
+                | (Options.Bold ? Style.Bold | Style.NoBold : Style.None);
             var wanted = enabled == Style.None ? null : FontStyles.ForBackground(Background());
 
             _applying = true;
@@ -142,17 +143,22 @@ namespace ZenbonesTheme
         private void Add(IClassificationType type, Style style)
         {
             var current = _formatMap.GetTextProperties(type);
+            var properties = _formatMap.GetExplicitTextProperties(type);
             var missing = style;
             if (current.Bold) missing &= ~Style.Bold;
             if (current.Italic) missing &= ~Style.Italic;
+            // Only cancel styles nobody has set explicitly.
+            if (!properties.BoldEmpty) missing &= ~Style.NoBold;
+            if (!properties.ItalicEmpty) missing &= ~Style.NoItalic;
             if (missing == Style.None)
             {
                 return;
             }
 
-            var properties = _formatMap.GetExplicitTextProperties(type);
             if ((missing & Style.Bold) != 0) properties = properties.SetBold(true);
             if ((missing & Style.Italic) != 0) properties = properties.SetItalic(true);
+            if ((missing & Style.NoBold) != 0) properties = properties.SetBold(false);
+            if ((missing & Style.NoItalic) != 0) properties = properties.SetItalic(false);
             _formatMap.SetTextProperties(type, properties);
 
             _added.TryGetValue(type, out var added);
@@ -167,8 +173,8 @@ namespace ZenbonesTheme
             }
 
             var properties = _formatMap.GetExplicitTextProperties(type);
-            if ((style & Style.Bold) != 0) properties = properties.ClearBold();
-            if ((style & Style.Italic) != 0) properties = properties.ClearItalic();
+            if ((style & (Style.Bold | Style.NoBold)) != 0) properties = properties.ClearBold();
+            if ((style & (Style.Italic | Style.NoItalic)) != 0) properties = properties.ClearItalic();
             _formatMap.SetTextProperties(type, properties);
 
             var remaining = _added[type] & ~style;

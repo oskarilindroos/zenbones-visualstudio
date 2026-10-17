@@ -8,19 +8,32 @@ from __future__ import annotations
 
 from .theme import role_styles
 from .vimcolors import Variant
-from .vsdirect import LANGUAGE_SERVICE, SYNTAX
+from .vsdirect import LANGUAGE_SERVICE, OVERLAYS, SYNTAX
 
-_FLAGS = {"bold": "Style.Bold", "italic": "Style.Italic"}
+_FLAGS = {
+    "bold": "Style.Bold",
+    "italic": "Style.Italic",
+    "nobold": "Style.NoBold",
+    "noitalic": "Style.NoItalic",
+}
 
 
 def classification_styles(v: Variant) -> dict[str, frozenset[str]]:
-    """Classification name -> styles, omitting unstyled classifications."""
+    """Classification name -> styles, omitting unstyled classifications.
+
+    Besides "bold" and "italic", overlays get "nobold" / "noitalic" to cancel
+    styles inherited from the classification they're drawn over.
+    """
     styles = role_styles(v)
     table: dict[str, tuple[str, frozenset[str]]] = {}
     for name, role in [*SYNTAX.items(), *LANGUAGE_SERVICE.items()]:
+        own = styles.get(role, frozenset())
+        if name in OVERLAYS:
+            under = styles[SYNTAX[OVERLAYS[name]]]
+            own = own | {"no" + s for s in under - own}
         # Classification names are case-insensitive ("keyword" == "Keyword").
-        if styles.get(role) and name.lower() not in table:
-            table[name.lower()] = (name, styles[role])
+        if own and name.lower() not in table:
+            table[name.lower()] = (name, frozenset(own))
     return {name: s for _, (name, s) in sorted(table.items())}
 
 

@@ -46,6 +46,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>FontStyles.cs</DependentUpon>
     </Compile>
+    <Compile Include="ModifierClassifier.cs" />
     <Compile Include="Options.cs">
       <SubType>Component</SubType>
     </Compile>

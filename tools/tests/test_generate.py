@@ -86,8 +86,11 @@ class Generated(unittest.TestCase):
         self.assertEqual(zenbones["comment"], {"italic"})
         self.assertEqual(zenbones["keyword"], {"bold"})
         self.assertNotIn("class name", zenbones)  # Type is plain in zenbones
+        # Modifiers are drawn over "keyword" and must undo its bold.
+        self.assertEqual(zenbones["Zenbones Modifier Keyword"], {"nobold"})
         # Rosebones doesn't bold its keywords.
         self.assertNotIn("keyword", by_id["rosebones_dark"])
+        self.assertNotIn("Zenbones Modifier Keyword", by_id["rosebones_dark"])
         # Names differing only in case must not both appear (VS ignores case).
         for styles in by_id.values():
             lowered = [name.lower() for name in styles]
