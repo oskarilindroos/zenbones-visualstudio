@@ -166,6 +166,32 @@ def derive_roles(v: Variant) -> Roles:
     )
 
 
+# Syntax role -> the zenbones group whose font style (bold/italic) it takes.
+ROLE_GROUPS = {
+    "fg": "Normal",
+    "comment": "Comment",
+    "constant": "Constant",
+    "number": "Number",
+    "boolean": "Boolean",
+    "string": "String",
+    "keyword": "Statement",
+    "type": "Type",
+    "function": "Function",
+    "identifier": "Identifier",
+    "special": "Special",
+    "delimiter": "Delimiter",
+    "preproc": "PreProc",
+    "error": "Error",
+}
+
+
+def role_styles(v: Variant) -> dict[str, frozenset[str]]:
+    """Bold/italic per syntax role; Visual Studio can't do the other styles."""
+    return {
+        role: v.group(group).styles & {"bold", "italic"} for role, group in ROLE_GROUPS.items()
+    }
+
+
 def vscode_colors(r: Roles) -> dict[str, str]:
     """Roles expressed as VS Code workbench color keys."""
     hover = mix(r.bg, r.float_sel, 0.5)

@@ -15,13 +15,13 @@
     <RootNamespace>ZenbonesTheme</RootNamespace>
     <AssemblyName>ZenbonesTheme</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <!-- Content-only VSIX: just the theme .pkgdef files, no assembly. -->
-    <GeneratePkgDefFile>false</GeneratePkgDefFile>
-    <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
+    <LangVersion>latest</LangVersion>
+    <!-- The assembly applies font styles and registers the options page. -->
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <UseCodebase>true</UseCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
-    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
-    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
-    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
     <DeployExtension>true</DeployExtension>
     <StartAction>Program</StartAction>
     <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
@@ -39,6 +39,28 @@
     <OutputPath>bin\Release\</OutputPath>
     <DeployExtension>false</DeployExtension>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="FontStyleListener.cs" />
+    <Compile Include="FontStyles.cs" />
+    <Compile Include="FontStyles.g.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>FontStyles.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ModifierClassifier.cs" />
+    <Compile Include="Options.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="ZenbonesPackage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
   <ItemGroup>
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
@@ -133,6 +155,8 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <!-- The VS 2022 GA SDK, so the assembly loads in every 2022 and 2026 release. -->
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.32112.339" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.14.2120">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

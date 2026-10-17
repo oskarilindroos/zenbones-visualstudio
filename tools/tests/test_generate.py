@@ -7,7 +7,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import generate  # noqa: E402
-from zbvs import pkgdef  # noqa: E402
+from zbvs import fontstyles, pkgdef, vsdirect  # noqa: E402
 from zbvs.colors import compound, contrast  # noqa: E402
 from zbvs.theme import derive_roles  # noqa: E402
 from zbvs.vimcolors import load_variants  # noqa: E402
@@ -80,6 +80,28 @@ class Generated(unittest.TestCase):
             self.assertGreaterEqual(contrast(r.fg, r.bg), 4.5, v.id)
             self.assertGreaterEqual(contrast(r.comment, r.bg), 2.5, v.id)
 
+    def test_font_styles_follow_zenbones(self):
+        by_id = {v.id: fontstyles.classification_styles(v) for v in self.variants}
+        zenbones = by_id["zenbones_dark"]
+        self.assertEqual(zenbones["comment"], {"italic"})
+        self.assertEqual(zenbones["keyword"], {"bold"})
+        self.assertNotIn("class name", zenbones)  # Type is plain in zenbones
+        # Modifiers are drawn over "keyword" and must undo its bold.
+        self.assertEqual(zenbones["Zenbones Modifier Keyword"], {"nobold"})
+        # Rosebones doesn't bold its keywords.
+        self.assertNotIn("keyword", by_id["rosebones_dark"])
+        self.assertNotIn("Zenbones Modifier Keyword", by_id["rosebones_dark"])
+        # Names differing only in case must not both appear (VS ignores case).
+        for styles in by_id.values():
+            lowered = [name.lower() for name in styles]
+            self.assertEqual(len(lowered), len(set(lowered)))
+
+    def test_font_style_table_is_keyed_by_unique_backgrounds(self):
+        source = fontstyles.render_csharp(self.variants)
+        keys = re.findall(r"\[(0x[0-9A-F]{6})\] = new", source)
+        self.assertEqual(len(keys), 19)
+        self.assertEqual(len(set(keys)), 19)
+
     def test_selection_is_compensated_for_vs_opacity(self):
         # VS paints "Selected Text" at 40% opacity; the stored color must
         # land on zenbones' Visual color once blended over the background.
@@ -89,6 +111,33 @@ class Generated(unittest.TestCase):
             drawn = compound(stored, r.bg, vsc_opacity=0.4)
             for a, b in zip(bytes.fromhex(drawn[1:7]), bytes.fromhex(r.selection[1:])):
                 self.assertLessEqual(abs(a - b), 2, v.id)
+
+
+class CSharpProjects(unittest.TestCase):
+    SRC = generate.ROOT / "src"
+
+    def compiled(self, project: Path) -> set[str]:
+        return {
+            Path(m.replace("\\", "/")).name
+            for m in re.findall(r'<Compile Include="([^"]+\.cs)"', project.read_text())
+        }
+
+    def test_projects_list_every_source_file(self):
+        # Both projects list files explicitly (globs fail on some VM shares),
+        # so a new file is easy to forget in one of them.
+        sources = {p.name for p in (self.SRC / "ZenbonesTheme").glob("*.cs")}
+        self.assertEqual(self.compiled(self.SRC / "ZenbonesTheme" / "ZenbonesTheme.csproj"), sources)
+        tests = self.SRC / "ZenbonesTheme.Tests"
+        self.assertEqual(
+            self.compiled(tests / "ZenbonesTheme.Tests.csproj"),
+            sources | {p.name for p in tests.glob("*.cs")},
+        )
+
+    def test_modifier_classification_name_matches_the_themes(self):
+        source = (self.SRC / "ZenbonesTheme" / "ModifierClassifier.cs").read_text()
+        name = re.search(r'public const string Name = "([^"]+)";', source).group(1)
+        self.assertIn(name, vsdirect.SYNTAX)
+        self.assertIn(name, vsdirect.OVERLAYS)
 
 
 if __name__ == "__main__":
