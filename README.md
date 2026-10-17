@@ -3,6 +3,13 @@
 The [zenbones](https://github.com/zenbones-theme/zenbones.nvim) collection of
 contrast-based color themes for **Visual Studio 2022 and 2026**.
 
+Zenbones was created by [Michael Chris Lopez (@mcchrish)](https://github.com/mcchrish).
+All credit for the color design goes to the original project; this repo only
+ports the themes to Visual Studio. This is an unofficial port, not affiliated with the
+zenbones project.
+
+This port was built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
+
 All 19 variants are included and appear under
 **Tools → Options → Environment → General → Color Theme**:
 
@@ -66,6 +73,8 @@ python3 tools/generate.py
 
 ## Limitations
 
+- So far only tested on Visual Studio 2022. The Visual Studio 2026 (Fluent)
+  tokens follow Microsoft's migration guide but haven't been checked in 2026 yet.
 - **No bold or italics.** Zenbones conveys a lot through font style (bold
   keywords, italic comments and constants), but Visual Studio themes can only
   set colors. You can still enable bold per item in
@@ -76,8 +85,8 @@ python3 tools/generate.py
 
 ## Credits
 
-- Colors from [zenbones.nvim](https://github.com/zenbones-theme/zenbones.nvim)
-  by Michael Chris Lopez (MIT).
+- Theme design and colors: [zenbones.nvim](https://github.com/zenbones-theme/zenbones.nvim)
+  by [Michael Chris Lopez](https://github.com/mcchrish) (MIT).
 - Token mapping data in `tools/zbvs/data` from
   [microsoft/theme-converter](https://github.com/microsoft/theme-converter)
   (MIT, see `tools/zbvs/data/LICENSE.theme-converter`).
