@@ -8,7 +8,19 @@ All credit for the color design goes to the original project; this repo only
 ports the themes to Visual Studio. This is an unofficial port, not affiliated with the
 zenbones project.
 
+![Zenbones Dark in Visual Studio](marketplace/images/zenbones-dark.png)
+
+![Zenbones Light in Visual Studio](marketplace/images/zenbones-light.png)
+
 This port was built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
+
+## Install
+
+Install **Zenbones Themes** from the
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OskariLindroos.ZenbonesThemes),
+or in Visual Studio under **Extensions → Manage Extensions**. Each
+[GitHub release](https://github.com/oskarilindroos/zenbones-visualstudio/releases)
+also has the `.vsix` attached.
 
 All 19 variants are included and appear under
 **Tools → Options → Environment → General → Color Theme**:
@@ -109,6 +121,22 @@ To update zenbones itself:
 git -C vendor/zenbones.nvim pull origin main
 python3 tools/generate.py
 ```
+
+## Releasing
+
+1. Bump `Version` in `src/ZenbonesTheme/source.extension.vsixmanifest` and merge it to `main`.
+2. Tag that commit and push the tag:
+
+   ```sh
+   git tag v1.0.0 && git push origin v1.0.0
+   ```
+
+3. CI builds and tests the tag and creates a GitHub release with the `.vsix`.
+4. Upload that `.vsix` at
+   [marketplace.visualstudio.com/manage](https://marketplace.visualstudio.com/manage/publishers/OskariLindroos):
+   **New extension → Visual Studio** the first time, **⋯ → Update** after
+   that. The listing text is `marketplace/overview.md`; paste it into the
+   Overview field, and pick the **Theme** category.
 
 ## Limitations
 
