@@ -42,11 +42,11 @@ namespace ZenbonesTheme.Tests
         }
 
         [Fact]
-        public void ModifierColorsAreOnByDefault()
+        public void ModifierColorsAreOptIn()
         {
-            // Matches zenbones out of the box; the setting is there to turn it off.
+            // The one feature that does work per line drawn stays off unless asked for.
             var info = typeof(OptionsPage).GetProperty(nameof(OptionsPage.ModifierColors));
-            Assert.Equal(true, info.GetCustomAttribute<DefaultValueAttribute>().Value);
+            Assert.Equal(false, info.GetCustomAttribute<DefaultValueAttribute>().Value);
             Assert.Equal("Syntax", info.GetCustomAttribute<CategoryAttribute>().Category);
         }
 
