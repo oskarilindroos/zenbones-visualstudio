@@ -109,6 +109,13 @@ class Generated(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "share the background"):
             fontstyles.render_csharp([self.variants[0], twin])
 
+    def test_sticky_scroll_matches_the_editor(self):
+        for v in self.variants:
+            theme = generate.build_theme(v, self.variants)
+            mef = next(c for c in theme.categories if c.name == "Text Editor MEF Items")
+            self.assertEqual(mef.colors["StickyScroll Background"]["Background"][:7], v.bg("Normal").upper(), v.id)
+            self.assertIn("StickyScrollLineHighlightFormat", mef.colors)
+
     def test_selection_is_compensated_for_vs_opacity(self):
         # VS paints "Selected Text" at 40% opacity; the stored color must
         # land on zenbones' Visual color once blended over the background.
