@@ -42,10 +42,10 @@ Italics look best with a font that has a real italic, such as Cascadia Code.
 ## C# modifiers
 
 Like zenbones in Neovim and VS Code, modifiers and declaration keywords
-(`public`, `static`, `async`, `class`, `namespace`, …) can be colored as types
-rather than as keywords. It's off by default to keep the extension light; turn
-it on under **Tools → Options → Zenbones → General → Color C# modifiers**, and
-adjust the color under **Fonts and Colors → Keyword - Modifier (Zenbones)**.
+(`public`, `static`, `async`, `class`, `namespace`, …) are colored as types
+rather than as keywords. Adjust the color under **Fonts and Colors → Keyword -
+Modifier (Zenbones)**, or turn it off under **Tools → Options → Zenbones →
+General → Color C# modifiers**.
 
 ## Credits
 

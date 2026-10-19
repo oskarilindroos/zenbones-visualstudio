@@ -19,7 +19,7 @@ namespace ZenbonesTheme
         private static bool s_loaded;
         private static bool s_italic = true;
         private static bool s_bold = true;
-        private static bool s_modifierColors;
+        private static bool s_modifierColors = true;
 
         public static event EventHandler Changed;
 
@@ -44,8 +44,9 @@ namespace ZenbonesTheme
         }
 
         /// <summary>
-        /// Whether C# modifiers get their own color. Off by default: it's the
-        /// only part of the extension that does work for every line drawn.
+        /// Whether C# modifiers get their own color, as in zenbones. It's the
+        /// only part of the extension that does work for every line drawn, so
+        /// it can be turned off.
         /// </summary>
         public static bool ModifierColors
         {
@@ -99,7 +100,7 @@ namespace ZenbonesTheme
         internal static (bool Italic, bool Bold, bool ModifierColors) Read(SettingsStore store) =>
             (store.GetBoolean(Collection, nameof(Italic), true),
              store.GetBoolean(Collection, nameof(Bold), true),
-             store.GetBoolean(Collection, nameof(ModifierColors), false));
+             store.GetBoolean(Collection, nameof(ModifierColors), true));
 
         internal static void Write(WritableSettingsStore store, bool italic, bool bold, bool modifierColors)
         {
@@ -131,9 +132,9 @@ namespace ZenbonesTheme
 
         [Category("Syntax")]
         [DisplayName("Color C# modifiers")]
-        [Description("Color modifiers and declaration keywords (public, static, class...) as types, like zenbones does in Neovim. Re-checks every line the editor draws, so it's off by default; leave it off on slower or low-memory machines.")]
-        [DefaultValue(false)]
-        public bool ModifierColors { get; set; }
+        [Description("Color modifiers and declaration keywords (public, static, class...) as types, like zenbones does in Neovim. Re-checks every line the editor draws; turn it off on slower or low-memory machines.")]
+        [DefaultValue(true)]
+        public bool ModifierColors { get; set; } = true;
 
         public override void LoadSettingsFromStorage()
         {
@@ -162,9 +163,20 @@ namespace ZenbonesTheme
     {
         public static readonly ModifierSetting Instance = new ModifierSetting();
 
-        // Taggers are created on the UI thread; anywhere else, fail safe to off
-        // rather than touch the settings store.
-        public bool Enabled => ThreadHelper.CheckAccess() && Options.ModifierColors;
+        public bool Enabled
+        {
+            get
+            {
+                // Taggers are created on the UI thread; anywhere else, report
+                // off rather than touch the settings store.
+                if (!ThreadHelper.CheckAccess())
+                {
+                    return false;
+                }
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return Options.ModifierColors;
+            }
+        }
 
         public event EventHandler Changed
         {
