@@ -1,11 +1,23 @@
 # Zenbones for Visual Studio
 
 The [zenbones](https://github.com/zenbones-theme/zenbones.nvim) collection of
-contrast-based color themes for **Visual Studio 2022 and 2026**.
+contrast-based color themes for **Visual Studio 2022 and 2026**, plus a small
+editor extension for what a Visual Studio color theme can't do on its own.
+
+A VS theme can only set colors, and only per classification. Zenbones relies
+on font style as much as color, and colors C# keywords by what they do. So
+besides the 19 themes, the extension:
+
+- **adds zenbones' bold and italics** (italic comments and strings, bold
+  keywords, …) while a zenbones theme is active, and removes them when you
+  switch away ([details](#bold-and-italics))
+- **can color C# modifiers as types**, the way zenbones does in Neovim and VS
+  Code, instead of as keywords (opt-in, [details](#c-modifiers))
+- adds a **Tools → Options → Zenbones** page to turn each of these on or off
 
 Zenbones was created by [Michael Chris Lopez (@mcchrish)](https://github.com/mcchrish).
-All credit for the color design goes to the original project; this repo only
-ports the themes to Visual Studio. This is an unofficial port, not affiliated with the
+All credit for the color design goes to the original project; this repo ports
+it to Visual Studio. This is an unofficial port, not affiliated with the
 zenbones project.
 
 ![Zenbones Dark in Visual Studio](marketplace/images/zenbones-dark.png)
