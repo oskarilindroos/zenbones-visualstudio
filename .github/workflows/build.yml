@@ -6,6 +6,15 @@ on:
     tags: ["v*"]
   pull_request:
 
+# Read-only unless a job asks for more (only release does).
+permissions:
+  contents: read
+
+# A newer push to a PR cancels its older run; main and tags always finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   generate:
     runs-on: ubuntu-latest
@@ -47,7 +56,7 @@ jobs:
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: vsix
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
@@ -56,15 +65,13 @@ jobs:
         with:
           name: ZenbonesTheme.vsix
       - name: Check the tag matches the manifest version
-        shell: pwsh
         run: |
-          [xml]$manifest = Get-Content src/ZenbonesTheme/source.extension.vsixmanifest
-          $version = $manifest.PackageManifest.Metadata.Identity.Version
-          if ("v$version" -ne $env:GITHUB_REF_NAME) {
-            throw "Tag $env:GITHUB_REF_NAME doesn't match manifest version $version"
-          }
+          version=$(python3 -c "import xml.etree.ElementTree as ET; ns = '{http://schemas.microsoft.com/developer/vsx-schema/2011}'; print(ET.parse('src/ZenbonesTheme/source.extension.vsixmanifest').find(f'{ns}Metadata/{ns}Identity').get('Version'))")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME doesn't match manifest version $version"
+            exit 1
+          fi
       - name: Create GitHub release
-        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create $env:GITHUB_REF_NAME ZenbonesTheme.vsix --title $env:GITHUB_REF_NAME --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" ZenbonesTheme.vsix --title "$GITHUB_REF_NAME" --generate-notes
