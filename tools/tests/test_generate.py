@@ -1,3 +1,4 @@
+import copy
 import re
 import sys
 import unittest
@@ -98,9 +99,15 @@ class Generated(unittest.TestCase):
 
     def test_font_style_table_is_keyed_by_unique_backgrounds(self):
         source = fontstyles.render_csharp(self.variants)
-        keys = re.findall(r"\[(0x[0-9A-F]{6})\] = new", source)
+        keys = re.findall(r"case (0x[0-9A-F]{6}): return \w+\(\);", source)
         self.assertEqual(len(keys), 19)
         self.assertEqual(len(set(keys)), 19)
+
+    def test_font_style_table_rejects_shared_backgrounds(self):
+        twin = copy.copy(self.variants[0])
+        twin.scheme = "twin"
+        with self.assertRaisesRegex(ValueError, "share the background"):
+            fontstyles.render_csharp([self.variants[0], twin])
 
     def test_selection_is_compensated_for_vs_opacity(self):
         # VS paints "Selected Text" at 40% opacity; the stored color must
@@ -138,6 +145,25 @@ class CSharpProjects(unittest.TestCase):
         name = re.search(r'public const string Name = "([^"]+)";', source).group(1)
         self.assertIn(name, vsdirect.SYNTAX)
         self.assertIn(name, vsdirect.OVERLAYS)
+
+
+class Robustness(unittest.TestCase):
+    def test_comment_stripping_respects_escapes(self):
+        from zbvs.vsmap import _strip_comment
+
+        self.assertEqual(_strip_comment('"a\\\\" // gone'), '"a\\\\" ')
+        self.assertEqual(_strip_comment('"say \\"//\\" here"'), '"say \\"//\\" here"')
+        self.assertEqual(_strip_comment('"http://x" // gone'), '"http://x" ')
+
+    def test_replace_block_requires_its_markers(self):
+        with self.assertRaises(ValueError):
+            generate.replace_block("<Assets></Assets>", "x")
+
+    def test_parse_failures_are_reported(self):
+        from zbvs.vimcolors import Variant, _validate
+
+        with self.assertRaisesRegex(ValueError, "no highlight for Normal"):
+            _validate(Variant("broken", "dark", ""))
 
 
 if __name__ == "__main__":
