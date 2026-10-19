@@ -3,7 +3,7 @@
     <Metadata>
         <Identity Id="ZenbonesTheme.oskarilindroos" Version="1.1.0" Language="en-US" Publisher="Oskari Lindroos" />
         <DisplayName>Zenbones Themes</DisplayName>
-        <Description xml:space="preserve">The zenbones collection of contrast-based color themes (zenbones, zenwritten, neobones, rosebones, tokyobones, kanagawabones and more), generated from zenbones.nvim. Light and dark variants for Visual Studio 2022 and 2026.</Description>
+        <Description xml:space="preserve">All 19 zenbones color themes (zenbones, zenwritten, neobones, rosebones, tokyobones, kanagawabones and more) for Visual Studio 2022 and 2026, plus the font styles a theme can't carry: zenbones' bold and italics, and optional C# modifier colors.</Description>
         <MoreInfo>https://github.com/oskarilindroos/zenbones-visualstudio</MoreInfo>
         <License>LICENSE.txt</License>
         <GettingStartedGuide>https://github.com/oskarilindroos/zenbones-visualstudio#readme</GettingStartedGuide>
