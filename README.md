@@ -44,7 +44,8 @@ constants, bold keywords. Visual Studio themes can only carry colors, so the
 extension includes a small editor component that adds the styles at runtime,
 using the same per-variant styles as the Neovim originals. It only does this
 while a zenbones theme is active (detected from the editor background), and
-removes them again when you switch to another theme.
+removes them again when you switch to another theme. Bold or italics you set
+yourself in Fonts and Colors are left alone.
 
 Turn italics or bold off under **Tools → Options → Zenbones → General**.
 Italics look best with a font that has a real italic, such as Cascadia Code or
@@ -83,8 +84,9 @@ per theme into `src/ZenbonesTheme/Themes/`:
    using the mapping tables from Microsoft's
    [theme-converter](https://github.com/microsoft/theme-converter).
 4. **`vsdirect.py`** sets editor classifications (C#, C++, XML/XAML, HTML,
-   CSS, …) directly, and adds the Fluent `Shell` / `ShellInternal` tokens that
-   Visual Studio 2026 reads before falling back to the legacy ones.
+   CSS, …) and editor surfaces (line numbers, sticky scroll, peek, diffs)
+   directly, and adds the Fluent `Shell` / `ShellInternal` tokens that Visual
+   Studio 2026 reads before falling back to the legacy ones.
 5. **`pkgdef.py`** compiles everything to the binary format VS loads; it's a
    port of the VSIX color compiler, so no Windows tooling is needed.
 6. **`fontstyles.py`** writes `FontStyles.g.cs`, the per-variant bold/italic
@@ -98,7 +100,9 @@ The extension's code in `src/ZenbonesTheme` is two small editor components:
   (see [C# modifiers](#c-modifiers)).
 
 The generator is plain Python 3.10+ with no dependencies and runs anywhere.
-Only packaging the `.vsix` needs Windows.
+Only packaging the `.vsix` needs Windows. It stops with an error rather than
+writing a wrong theme if the colorschemes can't be parsed (say, after a
+zenbones.nvim format change) or two variants share a background.
 
 ## Development
 
@@ -129,22 +133,6 @@ To update zenbones itself:
 git -C vendor/zenbones.nvim pull origin main
 python3 tools/generate.py
 ```
-
-## Releasing
-
-1. Bump `Version` in `src/ZenbonesTheme/source.extension.vsixmanifest` and merge it to `main`.
-2. Tag that commit and push the tag:
-
-   ```sh
-   git tag v1.0.0 && git push origin v1.0.0
-   ```
-
-3. CI builds and tests the tag and creates a GitHub release with the `.vsix`.
-4. Upload that `.vsix` at
-   [marketplace.visualstudio.com/manage](https://marketplace.visualstudio.com/manage/publishers/OskariLindroos):
-   **New extension → Visual Studio** the first time, **⋯ → Update** after
-   that. The listing text is `marketplace/overview.md`; paste it into the
-   Overview field, and pick the **Theme** category.
 
 ## Limitations
 
