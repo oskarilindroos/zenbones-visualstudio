@@ -131,12 +131,17 @@ namespace ZenbonesTheme
             {
                 foreach (var pair in _added.ToList())
                 {
+                    var owned = StillOwned(pair.Key, pair.Value);
+                    if (owned == Style.None)
+                    {
+                        continue;
+                    }
                     var keep = Style.None;
                     if (wanted != null && wanted.TryGetValue(pair.Key.Classification, out var style))
                     {
                         keep = style & enabled;
                     }
-                    Remove(pair.Key, pair.Value & ~keep);
+                    Remove(pair.Key, owned & ~keep);
                 }
 
                 if (wanted != null)
@@ -156,6 +161,31 @@ namespace ZenbonesTheme
                 _formatMap.EndBatchUpdate();
                 _applying = false;
             }
+        }
+
+        /// <summary>
+        /// Narrows what we recorded adding to <paramref name="type"/> to what
+        /// its explicit properties still show. A theme switch or a Fonts and
+        /// Colors edit can rebuild the map without our styles, and whatever is
+        /// there now isn't ours to remove.
+        /// </summary>
+        private Style StillOwned(IClassificationType type, Style recorded)
+        {
+            var properties = _formatMap.GetExplicitTextProperties(type);
+            var present = Style.None;
+            if (!properties.BoldEmpty) present |= properties.Bold ? Style.Bold : Style.NoBold;
+            if (!properties.ItalicEmpty) present |= properties.Italic ? Style.Italic : Style.NoItalic;
+
+            var owned = recorded & present;
+            if (owned == Style.None)
+            {
+                _added.Remove(type);
+            }
+            else
+            {
+                _added[type] = owned;
+            }
+            return owned;
         }
 
         private void Add(IClassificationType type, Style style)

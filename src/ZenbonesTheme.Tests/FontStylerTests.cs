@@ -114,6 +114,43 @@ namespace ZenbonesTheme.Tests
         }
 
         [Fact]
+        public void DoesNotClearAStyleThatReplacedOurs()
+        {
+            _editorFormatMap.SetBackground(FontStylesTests.ZenbonesDark);
+            var styler = CreateStyler();
+            styler.Apply();
+            Assert.True(Explicit("comment").Italic);
+
+            // A rebuild (e.g. a Fonts and Colors edit) replaces our italic with
+            // the user's own "not italic".
+            _formatMap.SetTextProperties(_registry["comment"], Explicit("comment").ClearItalic().SetItalic(false));
+            _editorFormatMap.SetBackground(VsDark);
+            styler.Apply();
+
+            Assert.False(Explicit("comment").ItalicEmpty);
+            Assert.False(Explicit("comment").Italic);
+        }
+
+        [Fact]
+        public void ForgetsStylesARebuildDropped()
+        {
+            _editorFormatMap.SetBackground(FontStylesTests.ZenbonesDark);
+            var styler = CreateStyler();
+            styler.Apply();
+
+            // The map is rebuilt without our bold, then the theme changes.
+            _formatMap.SetTextProperties(_registry["keyword"], Explicit("keyword").ClearBold());
+            _editorFormatMap.SetBackground(VsDark);
+            var writes = _formatMap.Writes;
+            styler.Apply();
+
+            Assert.True(Explicit("keyword").BoldEmpty);
+            // Nothing left to clear for keyword; only comment and the modifier
+            // still carry our styles.
+            Assert.Equal(writes + 2, _formatMap.Writes);
+        }
+
+        [Fact]
         public void DoesNotCancelBoldTheUserSetOnModifiers()
         {
             _formatMap.SetTextProperties(_registry[ModifierClassification.Name], Explicit(ModifierClassification.Name).SetBold(true));
