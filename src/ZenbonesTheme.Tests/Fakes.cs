@@ -20,6 +20,33 @@ namespace ZenbonesTheme.Tests
         public bool IsOfType(string type) => string.Equals(type, Classification, StringComparison.OrdinalIgnoreCase);
     }
 
+    internal sealed class FakeModifierSetting : IModifierSetting
+    {
+        private bool _enabled;
+
+        public FakeModifierSetting(bool enabled) => _enabled = enabled;
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                _enabled = value;
+                ChangedHandlers?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public int Subscribers => ChangedHandlers?.GetInvocationList().Length ?? 0;
+
+        private EventHandler ChangedHandlers { get; set; }
+
+        public event EventHandler Changed
+        {
+            add => ChangedHandlers += value;
+            remove => ChangedHandlers -= value;
+        }
+    }
+
     internal sealed class FakeClassificationTypeRegistry : IClassificationTypeRegistryService
     {
         private readonly Dictionary<string, IClassificationType> _types =

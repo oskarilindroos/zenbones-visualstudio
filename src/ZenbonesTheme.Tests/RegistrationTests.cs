@@ -42,6 +42,15 @@ namespace ZenbonesTheme.Tests
         }
 
         [Fact]
+        public void ModifierColorsAreOptIn()
+        {
+            // The one feature that does work per line drawn stays off unless asked for.
+            var info = typeof(OptionsPage).GetProperty(nameof(OptionsPage.ModifierColors));
+            Assert.Equal(false, info.GetCustomAttribute<DefaultValueAttribute>().Value);
+            Assert.Equal("Syntax", info.GetCustomAttribute<CategoryAttribute>().Category);
+        }
+
+        [Fact]
         public void ModifierClassificationHasNoColorsOfItsOwn()
         {
             // Without a zenbones theme the keyword formatting must show through.

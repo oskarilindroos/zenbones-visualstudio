@@ -18,14 +18,14 @@ namespace ZenbonesTheme.Tests
         }
 
         [Fact]
-        public void ReadDefaultsToEverythingOn()
+        public void ReadDefaultsToFontStylesOnAndModifierColorsOff()
         {
             // GetBoolean returns its default when the value isn't stored.
             var store = new Mock<SettingsStore>();
             store.Setup(s => s.GetBoolean(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
                 .Returns((string collection, string name, bool defaultValue) => defaultValue);
 
-            Assert.Equal((true, true), Options.Read(store.Object));
+            Assert.Equal((true, true, false), Options.Read(store.Object));
         }
 
         [Fact]
@@ -34,8 +34,9 @@ namespace ZenbonesTheme.Tests
             var store = new Mock<SettingsStore>();
             store.Setup(s => s.GetBoolean(Options.Collection, "Italic", true)).Returns(false);
             store.Setup(s => s.GetBoolean(Options.Collection, "Bold", true)).Returns(true);
+            store.Setup(s => s.GetBoolean(Options.Collection, "ModifierColors", false)).Returns(true);
 
-            Assert.Equal((false, true), Options.Read(store.Object));
+            Assert.Equal((false, true, true), Options.Read(store.Object));
         }
 
         [Fact]
@@ -44,11 +45,12 @@ namespace ZenbonesTheme.Tests
             var store = new Mock<WritableSettingsStore>();
             store.Setup(s => s.CollectionExists(Options.Collection)).Returns(false);
 
-            Options.Write(store.Object, italic: false, bold: true);
+            Options.Write(store.Object, italic: false, bold: true, modifierColors: true);
 
             store.Verify(s => s.CreateCollection(Options.Collection), Times.Once);
             store.Verify(s => s.SetBoolean(Options.Collection, "Italic", false), Times.Once);
             store.Verify(s => s.SetBoolean(Options.Collection, "Bold", true), Times.Once);
+            store.Verify(s => s.SetBoolean(Options.Collection, "ModifierColors", true), Times.Once);
         }
 
         [Fact]
@@ -57,7 +59,7 @@ namespace ZenbonesTheme.Tests
             var store = new Mock<WritableSettingsStore>();
             store.Setup(s => s.CollectionExists(Options.Collection)).Returns(true);
 
-            Options.Write(store.Object, italic: true, bold: false);
+            Options.Write(store.Object, italic: true, bold: false, modifierColors: false);
 
             store.Verify(s => s.CreateCollection(It.IsAny<string>()), Times.Never);
             store.Verify(s => s.SetBoolean(Options.Collection, "Bold", false), Times.Once);

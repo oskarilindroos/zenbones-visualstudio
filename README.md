@@ -56,10 +56,18 @@ Visual Studio's C# classifier (Roslyn) reports every keyword the same way, so
 `public static class` would get the same color and bold as `return`. Zenbones,
 like VS Code's C# grammar, colors modifiers and declaration keywords (`public`,
 `static`, `readonly`, `async`, `class`, `namespace`, `get`/`set`, …) as types.
-The extension re-tags those keywords so the themes can color them separately;
-you can adjust them under **Tools → Options → Environment → Fonts and Colors →
-Keyword - Modifier (Zenbones)**. With other themes the item has no colors of
-its own, so keywords look exactly as before.
+The extension can re-tag those keywords so the themes color them separately.
+
+This is **off by default**, because it's the only part of the extension that
+does work for every line the editor draws. Turn it on under **Tools → Options →
+Zenbones → General → Color C# modifiers**; open documents update straight away.
+Leave it off on slower or low-memory machines: while it's off, nothing runs and
+nothing is kept per document. Once on, you can adjust the color under **Tools →
+Options → Environment → Fonts and Colors → Keyword - Modifier (Zenbones)**. With
+other themes the item has no colors of its own, so keywords look exactly as
+before.
+
+C# inside Razor files isn't re-tagged.
 
 ## How it works
 
