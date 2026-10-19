@@ -1,41 +1,32 @@
 # Zenbones for Visual Studio
 
-The [zenbones](https://github.com/zenbones-theme/zenbones.nvim) collection of
-contrast-based color themes for **Visual Studio 2022 and 2026**, plus a small
-editor extension for what a Visual Studio color theme can't do on its own.
+The [zenbones](https://github.com/zenbones-theme/zenbones.nvim) color themes
+for **Visual Studio 2022 and 2026**, plus an editor extension for what a color
+theme can't do on its own:
 
-A VS theme can only set colors, and only per classification. Zenbones relies
-on font style as much as color, and colors C# keywords by what they do. So
-besides the 19 themes, the extension:
+- **Bold and italics** where zenbones uses them, while a zenbones theme is active.
+- **C# modifiers** (`public`, `static`, `class`, …) colored as types, as in
+  zenbones for Neovim and VS Code. Off by default.
 
-- **adds zenbones' bold and italics** (italic comments and strings, bold
-  keywords, …) while a zenbones theme is active, and removes them when you
-  switch away ([details](#bold-and-italics))
-- **can color C# modifiers as types**, the way zenbones does in Neovim and VS
-  Code, instead of as keywords (opt-in, [details](#c-modifiers))
-- adds a **Tools → Options → Zenbones** page to turn each of these on or off
-
-Zenbones was created by [Michael Chris Lopez (@mcchrish)](https://github.com/mcchrish).
-All credit for the color design goes to the original project; this repo ports
-it to Visual Studio. This is an unofficial port, not affiliated with the
-zenbones project.
+Both can be turned on or off under **Tools → Options → Zenbones**.
 
 ![Zenbones Dark in Visual Studio](marketplace/images/zenbones-dark.png)
 
 ![Zenbones Light in Visual Studio](marketplace/images/zenbones-light.png)
 
-This port was built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
+This is an unofficial port. Zenbones was created by
+[Michael Chris Lopez (@mcchrish)](https://github.com/mcchrish), and all credit
+for the design goes to the original project. The port was built with
+[Claude Code](https://claude.com/claude-code).
 
 ## Install
 
 Install **Zenbones Themes** from the
-[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OskariLindroos.ZenbonesThemes),
-or in Visual Studio under **Extensions → Manage Extensions**. Each
-[GitHub release](https://github.com/oskarilindroos/zenbones-visualstudio/releases)
-also has the `.vsix` attached.
+[Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=OskariLindroos.ZenbonesThemes)
+or under **Extensions → Manage Extensions** in Visual Studio. The `.vsix` is
+also attached to each [GitHub release](https://github.com/oskarilindroos/zenbones-visualstudio/releases).
 
-All 19 variants are included and appear under
-**Tools → Options → Environment → General → Color Theme**:
+Then pick a theme under **Tools → Options → Environment → General → Color Theme**:
 
 | Scheme | Variants |
 | --- | --- |
@@ -49,110 +40,37 @@ All 19 variants are included and appear under
 | Vimbones | Light |
 | Nordbones, Duckbones, Zenburned, Kanagawabones | Dark |
 
-## Bold and italics
+## Notes
 
-Zenbones conveys a lot through font style: italic comments, strings and
-constants, bold keywords. Visual Studio themes can only carry colors, so the
-extension includes a small editor component that adds the styles at runtime,
-using the same per-variant styles as the Neovim originals. It only does this
-while a zenbones theme is active (detected from the editor background), and
-removes them again when you switch to another theme. Bold or italics you set
-yourself in Fonts and Colors are left alone.
-
-Turn italics or bold off under **Tools → Options → Zenbones → General**.
-Italics look best with a font that has a real italic, such as Cascadia Code or
-Consolas.
-
-## C# modifiers
-
-Visual Studio's C# classifier (Roslyn) reports every keyword the same way, so
-`public static class` would get the same color and bold as `return`. Zenbones,
-like VS Code's C# grammar, colors modifiers and declaration keywords (`public`,
-`static`, `readonly`, `async`, `class`, `namespace`, `get`/`set`, …) as types.
-The extension can re-tag those keywords so the themes color them separately.
-
-This is **off by default**, because it's the only part of the extension that
-does work for every line the editor draws (cheap work: lines without a word
-spelled like a modifier are skipped). Turn it on under **Tools → Options →
-Zenbones → General → Color C# modifiers**; open documents update straight
-away, and while it's off nothing runs or is kept per document. Once on, adjust
-the color under **Tools → Options → Environment → Fonts and Colors → Keyword -
-Modifier (Zenbones)**. With other themes the item has no colors of its own, so
-keywords look exactly as before.
-
-C# inside Razor files isn't re-tagged.
-
-## How it works
-
-The themes are generated, not hand-written. `tools/generate.py` reads the
-compiled Vim colorschemes in `vendor/zenbones.nvim` (a pinned submodule), so
-every color matches the Neovim originals exactly, and writes one `.pkgdef`
-per theme into `src/ZenbonesTheme/Themes/`:
-
-1. **`vimcolors.py`** parses each scheme's highlight groups for light and dark.
-2. **`theme.py`** derives semantic roles (surfaces, text, syntax, diagnostics)
-   from the groups and expresses them as VS Code workbench keys.
-3. **`vsmap.py`** fans those keys out to ~1,500 legacy Visual Studio tokens
-   using the mapping tables from Microsoft's
-   [theme-converter](https://github.com/microsoft/theme-converter).
-4. **`vsdirect.py`** sets editor classifications (C#, C++, XML/XAML, HTML,
-   CSS, …) and editor surfaces (line numbers, sticky scroll, peek, diffs)
-   directly, and adds the Fluent `Shell` / `ShellInternal` tokens that Visual
-   Studio 2026 reads before falling back to the legacy ones.
-5. **`pkgdef.py`** compiles everything to the binary format VS loads; it's a
-   port of the VSIX color compiler, so no Windows tooling is needed.
-6. **`fontstyles.py`** writes `FontStyles.g.cs`, the per-variant bold/italic
-   table used by the C# editor component (`FontStyleListener.cs`).
-
-The extension's code in `src/ZenbonesTheme` is two small editor components:
-
-- **`FontStyleListener.cs`** adds and removes bold/italic as themes change
-  (see [Bold and italics](#bold-and-italics)).
-- **`ModifierClassifier.cs`** re-tags C# modifier keywords
-  (see [C# modifiers](#c-modifiers)).
-
-The generator is plain Python 3.10+ with no dependencies and runs anywhere.
-Only packaging the `.vsix` needs Windows. It stops with an error rather than
-writing a wrong theme if the colorschemes can't be parsed (say, after a
-zenbones.nvim format change) or two variants share a background.
+- Italics look best with a font that has a real italic, such as Cascadia Code.
+- Bold or italics you set yourself in Fonts and Colors are kept.
+- The C# modifier color can be changed in Fonts and Colors under
+  **Keyword - Modifier (Zenbones)**. C# in Razor files isn't affected.
+- So far only tested on Visual Studio 2022.
 
 ## Development
+
+The themes are generated from the Neovim colorschemes in `vendor/zenbones.nvim`
+(a submodule) by `tools/generate.py`, which needs only Python 3.10+.
 
 ```sh
 git clone --recurse-submodules https://github.com/oskarilindroos/zenbones-visualstudio
 cd zenbones-visualstudio
-python3 tools/generate.py                       # regenerate Themes/*.pkgdef
-python3 -m unittest discover -s tools/tests     # run the generator tests
+python3 tools/generate.py                     # regenerate the themes
+python3 -m unittest discover -s tools/tests   # generator tests
 ```
 
-The C# code has xUnit tests in `src/ZenbonesTheme.Tests`, which use fakes for
-the editor services, so they run without Visual Studio. They need Windows
-(WPF): run them from Test Explorer, or with
-`dotnet test src/ZenbonesTheme.Tests` after building the solution. CI runs both
-test suites.
+Generated files are committed, and CI fails if they're out of date. The C#
+tests in `src/ZenbonesTheme.Tests` need Windows. To try the extension, open
+`ZenbonesTheme.sln` in Visual Studio (with the **Visual Studio extension
+development** workload) and press **F5**.
 
-To try the themes, open `ZenbonesTheme.sln` in Visual Studio (with the
-**Visual Studio extension development** workload) and press **F5**. That
-starts an experimental instance of VS with the extension installed; pick a
-theme under Tools → Options → Environment → General.
-
-Generated files are committed so the Windows build doesn't need Python. CI
-fails if they're stale, so rerun the generator after changing `tools/`.
-
-To update zenbones itself:
+To update zenbones:
 
 ```sh
 git -C vendor/zenbones.nvim pull origin main
 python3 tools/generate.py
 ```
-
-## Limitations
-
-- So far only tested on Visual Studio 2022. The Visual Studio 2026 (Fluent)
-  tokens follow Microsoft's migration guide but haven't been checked in 2026 yet.
-- Visual Studio applies its own opacity to some editor highlights (selection,
-  current line). The generator compensates so the color you see on screen
-  matches zenbones.
 
 ## Credits
 

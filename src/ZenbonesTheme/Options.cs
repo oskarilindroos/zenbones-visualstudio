@@ -120,19 +120,19 @@ namespace ZenbonesTheme
     {
         [Category("Font styles")]
         [DisplayName("Italic")]
-        [Description("Use italics where zenbones does, e.g. comments, strings and constants. Only applies while a zenbones theme is active.")]
+        [Description("Use italics where zenbones does, such as comments and strings. Only applies with a zenbones theme.")]
         [DefaultValue(true)]
         public bool Italic { get; set; } = true;
 
         [Category("Font styles")]
         [DisplayName("Bold")]
-        [Description("Use bold where zenbones does, e.g. keywords and preprocessor directives. Only applies while a zenbones theme is active.")]
+        [Description("Use bold where zenbones does, such as keywords. Only applies with a zenbones theme.")]
         [DefaultValue(true)]
         public bool Bold { get; set; } = true;
 
         [Category("Syntax")]
         [DisplayName("Color C# modifiers")]
-        [Description("Color modifiers and declaration keywords (public, static, class...) as types, like zenbones does in Neovim. Re-checks every line the editor draws, so it's off by default.")]
+        [Description("Color C# modifiers and declaration keywords (public, static, class, ...) as types, as zenbones does in Neovim and VS Code.")]
         [DefaultValue(false)]
         public bool ModifierColors { get; set; }
 
