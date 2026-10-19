@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Formatting;
+using Xunit;
 
 namespace ZenbonesTheme.Tests
 {
@@ -18,6 +19,33 @@ namespace ZenbonesTheme.Tests
         public IEnumerable<IClassificationType> BaseTypes => Enumerable.Empty<IClassificationType>();
 
         public bool IsOfType(string type) => string.Equals(type, Classification, StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal sealed class FakeModifierSetting : IModifierSetting
+    {
+        private bool _enabled;
+
+        public FakeModifierSetting(bool enabled) => _enabled = enabled;
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                _enabled = value;
+                ChangedHandlers?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public int Subscribers => ChangedHandlers?.GetInvocationList().Length ?? 0;
+
+        private EventHandler ChangedHandlers { get; set; }
+
+        public event EventHandler Changed
+        {
+            add => ChangedHandlers += value;
+            remove => ChangedHandlers -= value;
+        }
     }
 
     internal sealed class FakeClassificationTypeRegistry : IClassificationTypeRegistryService
@@ -89,7 +117,14 @@ namespace ZenbonesTheme.Tests
 
         public bool IsInBatchUpdate { get; private set; }
 
-        public void BeginBatchUpdate() => IsInBatchUpdate = true;
+        public int Batches { get; private set; }
+
+        public void BeginBatchUpdate()
+        {
+            Assert.False(IsInBatchUpdate, "batch already open");
+            Batches++;
+            IsInBatchUpdate = true;
+        }
 
         public void EndBatchUpdate()
         {

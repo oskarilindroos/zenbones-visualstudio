@@ -93,7 +93,8 @@ class Roles:
 def derive_roles(v: Variant) -> Roles:
     bg = v.bg("Normal")
     fg = v.fg("Normal")
-    assert bg and fg, f"{v.id}: Normal has no colors"
+    if not (bg and fg):
+        raise ValueError(f"{v.id}: Normal has no colors")
 
     def fg_of(*names: str) -> str:
         return v.fg(*names) or fg

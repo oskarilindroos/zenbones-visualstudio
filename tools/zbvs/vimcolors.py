@@ -80,16 +80,37 @@ def _parse_block(body: str, variant: Variant) -> None:
     variant.terminal = [c.upper() for _, c in terminal]
 
 
+# Groups every theme is built from. If the compiled colorschemes change format
+# and stop matching the regexes above, these go missing and generation fails,
+# instead of every color quietly falling back to Normal.
+REQUIRED_GROUPS = (
+    "Normal", "Comment", "Constant", "String", "Statement", "Type", "Function",
+    "Identifier", "Special", "Delimiter", "PreProc", "Visual", "CursorLine",
+    "LineNr", "Search", "StatusLine", "NormalFloat", "PmenuSel", "DiffAdd", "DiffDelete",
+)
+
+
+def _validate(variant: Variant) -> None:
+    missing = [g for g in REQUIRED_GROUPS if g not in variant.groups and g not in variant.links]
+    if missing:
+        raise ValueError(f"{variant.id}: no highlight for {', '.join(missing)}")
+    if len(variant.terminal) != 16:
+        raise ValueError(f"{variant.id}: expected 16 terminal colors, found {len(variant.terminal)}")
+
+
 def load_variants(zenbones_dir: Path) -> list[Variant]:
     """Return every light/dark variant of every scheme, in registry order."""
-    registry = json.loads((zenbones_dir / "zenbones.json").read_text())
+    registry = json.loads((zenbones_dir / "zenbones.json").read_text(encoding="utf-8"))
     variants = []
     for entry in registry:
-        text = (zenbones_dir / "colors" / f"{entry['name']}.vim").read_text()
+        text = (zenbones_dir / "colors" / f"{entry['name']}.vim").read_text(encoding="utf-8")
         for background, body in _BLOCK.findall(text):
             if entry.get("background", background) != background:
                 continue
             variant = Variant(entry["name"], background, entry["description"])
             _parse_block(body, variant)
+            _validate(variant)
             variants.append(variant)
+    if not variants:
+        raise ValueError(f"no colorschemes found in {zenbones_dir}")
     return variants

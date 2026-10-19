@@ -43,18 +43,24 @@ class ColorKey:
         raise ValueError(f"invalid mapping {text!r}")
 
 
+def _strip_comment(line: str) -> str:
+    """`line` without a trailing // comment, ignoring // inside strings."""
+    in_string = escaped = False
+    for i, ch in enumerate(line):
+        if escaped:
+            escaped = False
+        elif in_string and ch == "\\":
+            escaped = True
+        elif ch == '"':
+            in_string = not in_string
+        elif not in_string and line.startswith("//", i):
+            return line[:i]
+    return line
+
+
 def _load_jsonc(path: Path):
     """json.loads that tolerates // comments and trailing commas."""
-    lines = []
-    for line in path.read_text(encoding="utf-8-sig").splitlines():
-        in_string = False
-        for i, ch in enumerate(line):
-            if ch == '"' and (i == 0 or line[i - 1] != "\\"):
-                in_string = not in_string
-            elif not in_string and line.startswith("//", i):
-                line = line[:i]
-                break
-        lines.append(line)
+    lines = [_strip_comment(line) for line in path.read_text(encoding="utf-8-sig").splitlines()]
     return json.loads(re.sub(r",(\s*[\]}])", r"\1", "\n".join(lines)))
 
 

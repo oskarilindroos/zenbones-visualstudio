@@ -84,6 +84,10 @@ def render_content(ids: list[str]) -> str:
 
 
 def replace_block(text: str, body: str) -> str:
+    markers = (text.count("<!-- themes:start -->"), text.count("<!-- themes:end -->"))
+    if markers != (1, 1):
+        # Without this the file would be left as is, missing new themes.
+        raise ValueError("expected one <!-- themes:start --> ... <!-- themes:end --> block")
     return re.sub(
         r"(<!-- themes:start -->).*?(<!-- themes:end -->)",
         lambda m: m.group(1) + body + m.group(2),

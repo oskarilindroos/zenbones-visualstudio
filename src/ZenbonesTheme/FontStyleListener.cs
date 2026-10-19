@@ -74,6 +74,7 @@ namespace ZenbonesTheme
 
         private bool _applying;
         private bool _pending;
+        private bool _batching;
 
         public FontStyler(
             IClassificationFormatMap formatMap,
@@ -126,17 +127,21 @@ namespace ZenbonesTheme
             var wanted = enabled == Style.None ? null : FontStyles.ForBackground(Background());
 
             _applying = true;
-            _formatMap.BeginBatchUpdate();
             try
             {
                 foreach (var pair in _added.ToList())
                 {
+                    var owned = StillOwned(pair.Key, pair.Value);
+                    if (owned == Style.None)
+                    {
+                        continue;
+                    }
                     var keep = Style.None;
                     if (wanted != null && wanted.TryGetValue(pair.Key.Classification, out var style))
                     {
                         keep = style & enabled;
                     }
-                    Remove(pair.Key, pair.Value & ~keep);
+                    Remove(pair.Key, owned & ~keep);
                 }
 
                 if (wanted != null)
@@ -153,9 +158,54 @@ namespace ZenbonesTheme
             }
             finally
             {
-                _formatMap.EndBatchUpdate();
+                if (_batching)
+                {
+                    _batching = false;
+                    _formatMap.EndBatchUpdate();
+                }
                 _applying = false;
             }
+        }
+
+        /// <summary>
+        /// Writes through one batch per <see cref="Apply"/>, started only once
+        /// there's something to write. Ending a batch makes every view using
+        /// the map re-format, so the usual no-op apply (after an unrelated
+        /// change, or our styles already in place) must not open one.
+        /// </summary>
+        private void SetTextProperties(IClassificationType type, TextFormattingRunProperties properties)
+        {
+            if (!_batching)
+            {
+                _batching = true;
+                _formatMap.BeginBatchUpdate();
+            }
+            _formatMap.SetTextProperties(type, properties);
+        }
+
+        /// <summary>
+        /// Narrows what we recorded adding to <paramref name="type"/> to what
+        /// its explicit properties still show. A theme switch or a Fonts and
+        /// Colors edit can rebuild the map without our styles, and whatever is
+        /// there now isn't ours to remove.
+        /// </summary>
+        private Style StillOwned(IClassificationType type, Style recorded)
+        {
+            var properties = _formatMap.GetExplicitTextProperties(type);
+            var present = Style.None;
+            if (!properties.BoldEmpty) present |= properties.Bold ? Style.Bold : Style.NoBold;
+            if (!properties.ItalicEmpty) present |= properties.Italic ? Style.Italic : Style.NoItalic;
+
+            var owned = recorded & present;
+            if (owned == Style.None)
+            {
+                _added.Remove(type);
+            }
+            else
+            {
+                _added[type] = owned;
+            }
+            return owned;
         }
 
         private void Add(IClassificationType type, Style style)
@@ -177,7 +227,7 @@ namespace ZenbonesTheme
             if ((missing & Style.Italic) != 0) properties = properties.SetItalic(true);
             if ((missing & Style.NoBold) != 0) properties = properties.SetBold(false);
             if ((missing & Style.NoItalic) != 0) properties = properties.SetItalic(false);
-            _formatMap.SetTextProperties(type, properties);
+            SetTextProperties(type, properties);
 
             _added.TryGetValue(type, out var added);
             _added[type] = added | missing;
@@ -193,7 +243,7 @@ namespace ZenbonesTheme
             var properties = _formatMap.GetExplicitTextProperties(type);
             if ((style & (Style.Bold | Style.NoBold)) != 0) properties = properties.ClearBold();
             if ((style & (Style.Italic | Style.NoItalic)) != 0) properties = properties.ClearItalic();
-            _formatMap.SetTextProperties(type, properties);
+            SetTextProperties(type, properties);
 
             var remaining = _added[type] & ~style;
             if (remaining == Style.None)

@@ -19,6 +19,7 @@ namespace ZenbonesTheme
         private static bool s_loaded;
         private static bool s_italic = true;
         private static bool s_bold = true;
+        private static bool s_modifierColors;
 
         public static event EventHandler Changed;
 
@@ -42,6 +43,21 @@ namespace ZenbonesTheme
             }
         }
 
+        /// <summary>
+        /// Whether C# modifiers get their own color, as in zenbones. Off by
+        /// default: it's the only part of the extension that does work for
+        /// every line drawn.
+        /// </summary>
+        public static bool ModifierColors
+        {
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                EnsureLoaded();
+                return s_modifierColors;
+            }
+        }
+
         /// <summary>The styles <see cref="FontStyler"/> may add or cancel.</summary>
         public static Style EnabledStylesOnUIThread()
         {
@@ -53,16 +69,18 @@ namespace ZenbonesTheme
             (italic ? Style.Italic | Style.NoItalic : Style.None)
             | (bold ? Style.Bold | Style.NoBold : Style.None);
 
-        public static void Save(bool italic, bool bold)
+        public static void Save(bool italic, bool bold, bool modifierColors)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Write(
                 new ShellSettingsManager(ServiceProvider.GlobalProvider).GetWritableSettingsStore(SettingsScope.UserSettings),
                 italic,
-                bold);
+                bold,
+                modifierColors);
 
             s_italic = italic;
             s_bold = bold;
+            s_modifierColors = modifierColors;
             s_loaded = true;
             Changed?.Invoke(null, EventArgs.Empty);
         }
@@ -75,14 +93,16 @@ namespace ZenbonesTheme
                 return;
             }
             s_loaded = true;
-            (s_italic, s_bold) = Read(
+            (s_italic, s_bold, s_modifierColors) = Read(
                 new ShellSettingsManager(ServiceProvider.GlobalProvider).GetReadOnlySettingsStore(SettingsScope.UserSettings));
         }
 
-        internal static (bool Italic, bool Bold) Read(SettingsStore store) =>
-            (store.GetBoolean(Collection, nameof(Italic), true), store.GetBoolean(Collection, nameof(Bold), true));
+        internal static (bool Italic, bool Bold, bool ModifierColors) Read(SettingsStore store) =>
+            (store.GetBoolean(Collection, nameof(Italic), true),
+             store.GetBoolean(Collection, nameof(Bold), true),
+             store.GetBoolean(Collection, nameof(ModifierColors), false));
 
-        internal static void Write(WritableSettingsStore store, bool italic, bool bold)
+        internal static void Write(WritableSettingsStore store, bool italic, bool bold, bool modifierColors)
         {
             if (!store.CollectionExists(Collection))
             {
@@ -90,6 +110,7 @@ namespace ZenbonesTheme
             }
             store.SetBoolean(Collection, nameof(Italic), italic);
             store.SetBoolean(Collection, nameof(Bold), bold);
+            store.SetBoolean(Collection, nameof(ModifierColors), modifierColors);
         }
     }
 
@@ -99,27 +120,68 @@ namespace ZenbonesTheme
     {
         [Category("Font styles")]
         [DisplayName("Italic")]
-        [Description("Use italics where zenbones does, e.g. comments, strings and constants. Only applies while a zenbones theme is active.")]
+        [Description("Use italics where zenbones does, such as comments and strings. Only applies with a zenbones theme.")]
         [DefaultValue(true)]
         public bool Italic { get; set; } = true;
 
         [Category("Font styles")]
         [DisplayName("Bold")]
-        [Description("Use bold where zenbones does, e.g. keywords and preprocessor directives. Only applies while a zenbones theme is active.")]
+        [Description("Use bold where zenbones does, such as keywords. Only applies with a zenbones theme.")]
         [DefaultValue(true)]
         public bool Bold { get; set; } = true;
+
+        [Category("Syntax")]
+        [DisplayName("Color C# modifiers")]
+        [Description("Color C# modifiers and declaration keywords (public, static, class, ...) as types, as zenbones does in Neovim and VS Code.")]
+        [DefaultValue(false)]
+        public bool ModifierColors { get; set; }
 
         public override void LoadSettingsFromStorage()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
             Italic = Options.Italic;
             Bold = Options.Bold;
+            ModifierColors = Options.ModifierColors;
         }
 
         public override void SaveSettingsToStorage()
         {
             ThreadHelper.ThrowIfNotOnUIThread();
-            Options.Save(Italic, Bold);
+            Options.Save(Italic, Bold, ModifierColors);
+        }
+    }
+
+    /// <summary>The modifier color setting, as the tagger sees it.</summary>
+    internal interface IModifierSetting
+    {
+        bool Enabled { get; }
+
+        event EventHandler Changed;
+    }
+
+    internal sealed class ModifierSetting : IModifierSetting
+    {
+        public static readonly ModifierSetting Instance = new ModifierSetting();
+
+        public bool Enabled
+        {
+            get
+            {
+                // Taggers are created on the UI thread; anywhere else, report
+                // off rather than touch the settings store.
+                if (!ThreadHelper.CheckAccess())
+                {
+                    return false;
+                }
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return Options.ModifierColors;
+            }
+        }
+
+        public event EventHandler Changed
+        {
+            add => Options.Changed += value;
+            remove => Options.Changed -= value;
         }
     }
 }

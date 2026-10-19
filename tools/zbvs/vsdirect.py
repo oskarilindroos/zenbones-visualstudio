@@ -214,6 +214,10 @@ def _editor(r: Roles, put) -> None:
 
     put(MEF, "Line Number", FG, r.line_nr)
     put(MEF, "Line Number", BG, r.bg)
+    # Sticky scroll header (VS 17.5+); like VS Code, the editor background,
+    # with the list hover color on the line under the mouse.
+    put(MEF, "StickyScroll Background", BG, r.bg)
+    put(MEF, "StickyScrollLineHighlightFormat", BG, mix(r.bg, r.float_sel, 0.5))
     put(MEF, "MarkerFormatDefinition/FindHighlight", BG, r.search)
     put(MEF, "MarkerFormatDefinition/FindHighlight", FG, r.search)
     put(MEF, "MarkerFormatDefinition/ScopeHighlight", BG, r.cursorline)
