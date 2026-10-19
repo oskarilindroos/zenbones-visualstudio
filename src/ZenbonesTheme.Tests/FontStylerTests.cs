@@ -202,6 +202,46 @@ namespace ZenbonesTheme.Tests
         }
 
         [Fact]
+        public void WritesInOneBatch()
+        {
+            _editorFormatMap.SetBackground(FontStylesTests.ZenbonesDark);
+            var styler = CreateStyler();
+            styler.Apply();
+            Assert.Equal(1, _formatMap.Batches);
+
+            // Switching away removes everything in one batch too.
+            _editorFormatMap.SetBackground(VsDark);
+            styler.Apply();
+            Assert.Equal(2, _formatMap.Batches);
+            Assert.False(_formatMap.IsInBatchUpdate);
+        }
+
+        [Fact]
+        public void NoOpApplyDoesNotOpenABatch()
+        {
+            // Ending a batch re-formats every view using the map, so an apply
+            // that changes nothing mustn't start one.
+            _editorFormatMap.SetBackground(FontStylesTests.ZenbonesDark);
+            var styler = CreateStyler();
+            styler.Apply();
+            var batches = _formatMap.Batches;
+
+            styler.Apply();
+
+            Assert.Equal(batches, _formatMap.Batches);
+        }
+
+        [Fact]
+        public void OtherThemesNeverOpenABatch()
+        {
+            _editorFormatMap.SetBackground(VsDark);
+
+            CreateStyler().Apply();
+
+            Assert.Equal(0, _formatMap.Batches);
+        }
+
+        [Fact]
         public void SkipsClassificationsThatDontExist()
         {
             // Most of the table is for languages that aren't installed.

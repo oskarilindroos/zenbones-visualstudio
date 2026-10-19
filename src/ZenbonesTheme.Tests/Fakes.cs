@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Media;
 using Microsoft.VisualStudio.Text.Classification;
 using Microsoft.VisualStudio.Text.Formatting;
+using Xunit;
 
 namespace ZenbonesTheme.Tests
 {
@@ -116,7 +117,14 @@ namespace ZenbonesTheme.Tests
 
         public bool IsInBatchUpdate { get; private set; }
 
-        public void BeginBatchUpdate() => IsInBatchUpdate = true;
+        public int Batches { get; private set; }
+
+        public void BeginBatchUpdate()
+        {
+            Assert.False(IsInBatchUpdate, "batch already open");
+            Batches++;
+            IsInBatchUpdate = true;
+        }
 
         public void EndBatchUpdate()
         {
