@@ -8,7 +8,7 @@ fixes for converter mappings that don't suit zenbones, and the Fluent
 
 from __future__ import annotations
 
-from .colors import alpha, compound, mix
+from .colors import alpha, compound, contrast, mix
 from .theme import Roles
 from .vsmap import Tokens
 
@@ -199,6 +199,117 @@ def _text_views(r: Roles, put) -> None:
     put("Find Results", "Selected Text", FG, r.fg)
     put("Editor Tooltip", "Plain Text", FG, r.fg)
     put("Editor Tooltip", "Plain Text", BG, r.float)
+
+
+def _buttons(r: Roles, put) -> None:
+    """The shared WPF button styles, neutral like Visual Studio's own themes.
+
+    The converter takes these from VS Code's button.*, an accent fill with
+    background-colored text. Controls that draw their own background but
+    keep this text color, such as the Code Search filters, then show text
+    the color of the window.
+    """
+    rest, hover, pressed = r.float, mix(r.float, r.float_sel, 0.5), r.float_sel
+    disabled = mix(r.float, r.fg, 0.38)
+
+    states = {
+        "Button": rest,
+        "ButtonDefault": rest,
+        "ButtonFocused": rest,
+        "ButtonHover": hover,
+        "ButtonPressed": pressed,
+    }
+    for name, background in states.items():
+        put("CommonControls", name, BG, background)
+        put("CommonControls", name, FG, readable_on(background, r.fg))
+    put("CommonControls", "ButtonDisabled", BG, rest)
+    put("CommonControls", "ButtonDisabled", FG, disabled)
+    for state in ("Disabled", "Hover", "Pressed"):
+        put("CommonControls", f"ButtonBorder{state}", BG, r.border_subtle)
+    # The dialog's default and focused buttons keep an accent outline.
+    put("CommonControls", "ButtonBorder", BG, r.border_subtle)
+    put("CommonControls", "ButtonBorderDefault", BG, r.accent)
+    put("CommonControls", "ButtonBorderFocused", BG, r.accent)
+
+    # Team Explorer (Git Changes and friends) names the same states its own
+    # way. Its call-to-action buttons keep the accent fill.
+    states = {"Button": rest, "ButtonMouseOver": hover, "ButtonPressed": pressed}
+    for name, background in states.items():
+        put("TeamExplorer", name, BG, background)
+        put("TeamExplorer", name, FG, readable_on(background, r.fg))
+        put("TeamExplorer", f"{name}Border", BG, r.border_subtle)
+    put("TeamExplorer", "ButtonDisabled", BG, rest)
+    put("TeamExplorer", "ButtonDisabled", FG, disabled)
+    put("TeamExplorer", "ButtonDisabledBorder", BG, r.border_subtle)
+
+
+def _designer(r: Roles, put) -> None:
+    """XAML designer toolbar buttons. The converter gives them an accent
+    fill, but at rest they're drawn bare on the window, so their icons need
+    the window's text color rather than one that reads on the accent."""
+    hover, pressed = mix(r.float, r.float_sel, 0.5), r.float_sel
+    for kind in ("Command", "IconButton", "InteractiveIcon"):
+        put("Cider", kind, BG, alpha(r.bg, 0))
+        put("Cider", kind, FG, r.fg)
+        put("Cider", f"{kind}MouseOver", BG, hover)
+        put("Cider", f"{kind}MouseOver", FG, readable_on(hover, r.fg))
+    for kind in ("Command", "IconButton"):
+        put("Cider", f"{kind}Pressed", BG, pressed)
+        put("Cider", f"{kind}Pressed", FG, readable_on(pressed, r.fg))
+
+
+def _glyphs(r: Roles, put) -> None:
+    """Text and icons the converter colors like the window they're drawn on."""
+    put("TeamExplorer", "ActionLinkItem", FG, r.link)
+    for state in ("", "Hover", "Pressed"):
+        put("NotificationBubble", f"NotificationBubbleCloseButton{state}Glyph", FG, r.fg)
+    for state in ("", "Focused", "Hover"):
+        put("Promotion", f"LightboxDialogCloseButtonGlyph{state}", FG, r.fg)
+    put("WorkItemEditor", "DropDownHover", FG, r.fg)
+    for tag in ("TagActive", "TagHover"):
+        for state in ("Hover", "Pressed"):
+            put("WorkItemEditor", f"{tag}Glyph{state}", FG, r.fg)
+
+
+# Categories whose colors are set deliberately above, or aren't text on a
+# background, and so are left out of _readable.
+NOT_TEXT = (TEXT_MANAGER, LANGUAGE, MEF, MARKER, "Output Window", "Find Results",
+            "Immediate Window", "Command Window", "Package Manager Console", "Editor Tooltip")
+
+
+def readable_on(background: str, *candidates: str) -> str:
+    """The candidate that reads best on background, shaded toward black or
+    white until it reaches 4.5:1 if none does (for bright accent fills)."""
+    best = max(candidates, key=lambda c: contrast(c, background))
+    extreme = max(("#000000", "#FFFFFF"), key=lambda c: contrast(c, background))
+    amount = 0.0
+    color = best
+    while contrast(color, background) < 4.5 and amount < 1:
+        amount = min(1.0, amount + 0.1)
+        color = mix(best, extreme, amount)
+    return color
+
+
+def _readable(r: Roles, tokens: Tokens) -> None:
+    """Gives text the theme's foreground or background, whichever reads
+    better, where the converter paired it with a fill it doesn't read on
+    (normal text on an accent fill, or text the color of its own fill)."""
+    for (category, name), aspects in tokens.items():
+        if category in NOT_TEXT or "Disabled" in name or name.startswith("Artboard"):
+            continue
+        fg, bg = aspects.get(FG), aspects.get(BG)
+        if not fg or not bg or len(fg) != 7 or len(bg) != 7:
+            continue  # only solid text on a solid fill
+        if contrast(fg, bg) < 4.5:
+            aspects[FG] = readable_on(bg, r.fg, r.bg)
+
+    # The start window stores its button text apart from the fill.
+    welcome = "WelcomeExperience"
+    for (category, name), aspects in list(tokens.items()):
+        if category == welcome and name.endswith("Foreground") and FG in aspects:
+            fill = tokens.get((welcome, name[: -len("Foreground")] + "Background"), {}).get(BG)
+            if fill and len(fill) == 7:
+                aspects[FG] = readable_on(fill, r.fg, r.bg)
 
 
 def _editor(r: Roles, put) -> None:
@@ -442,6 +553,10 @@ def apply(r: Roles, tokens: Tokens) -> None:
     def put(category: str, name: str, aspect: str, color: str) -> None:
         tokens.setdefault((category, name), {})[aspect] = color
 
+    _readable(r, tokens)
     _text_views(r, put)
+    _buttons(r, put)
+    _designer(r, put)
+    _glyphs(r, put)
     _editor(r, put)
     _fluent(r, put)
