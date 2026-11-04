@@ -116,6 +116,31 @@ class Generated(unittest.TestCase):
             self.assertEqual(mef.colors["StickyScroll Background"]["Background"][:7], v.bg("Normal").upper(), v.id)
             self.assertIn("StickyScrollLineHighlightFormat", mef.colors)
 
+    def test_button_text_reads_on_the_window_and_the_button(self):
+        # Code Search's filters keep the button text color but draw their
+        # own background, so the text must read on both.
+        for v in self.variants:
+            r = derive_roles(v)
+            theme = generate.build_theme(v, self.variants)
+            controls = next(c for c in theme.categories if c.name == "CommonControls")
+            for name in ("Button", "ButtonDefault", "ButtonFocused", "ButtonHover", "ButtonPressed"):
+                colors = controls.colors[name]
+                for background in (r.bg, r.chrome):
+                    self.assertGreaterEqual(contrast(colors["Foreground"], background), 4.5, f"{v.id} {name}")
+
+    def test_text_reads_on_its_fill(self):
+        for v in self.variants:
+            theme = generate.build_theme(v, self.variants)
+            for category in theme.categories:
+                if category.name in vsdirect.NOT_TEXT:
+                    continue
+                for name, aspects in category.colors.items():
+                    fg, bg = aspects.get("Foreground"), aspects.get("Background")
+                    if "Disabled" in name or name.startswith("Artboard"):
+                        continue
+                    if fg and bg and len(fg) == 7 and len(bg) == 7:
+                        self.assertGreaterEqual(contrast(fg, bg), 4.5, f"{v.id} {category.name} {name}")
+
     def test_selection_is_compensated_for_vs_opacity(self):
         # VS paints "Selected Text" at 40% opacity; the stored color must
         # land on zenbones' Visual color once blended over the background.
